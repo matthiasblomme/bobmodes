@@ -4,7 +4,7 @@ A custom mode / skill for IBM App Connect Enterprise (ACE) work.
 
 This repository currently ships one mode:
 
-- **ACE Support Case** (`support_case`) - guides you through collecting a complete, well-organised diagnostic bundle for an IBM App Connect Enterprise support case.
+- **ACE Support Case** (`ace-support-case`) - guides you through collecting a complete, well-organised diagnostic bundle for an IBM App Connect Enterprise support case.
 
 ---
 
@@ -20,7 +20,7 @@ It follows a structured, phase-by-phase workflow:
 4. **Problem-specific diagnostics** - a decision tree of exactly what to gather for each problem type (event-log windows, user/service trace, ODBC trace, abend/dump files, GSKit library-ordering checks, and more).
 5. **Analysis and case generation** - self-assessment of the collected data, an optional `ACELogAnalyser` run, and a ready-to-paste IBM case submission block (title, product, version, severity, business impact, structured description), with the bundle compressed and ready to attach.
 
-The mode is grounded in the full IBM ACE 13 "Troubleshooting and support" documentation set, included under `skills/support_case/references/documentation/` as per-topic PDFs.
+The mode is grounded in the full IBM ACE 13 "Troubleshooting and support" documentation set, included under `skills/ace-support-case/references/documentation/` as per-topic PDFs.
 
 ---
 
@@ -43,12 +43,12 @@ Skills are discovered from `~/.claude/skills/`. Copy the skill folder there:
 
 ```powershell
 # Windows / PowerShell
-Copy-Item -Recurse -Force .\skills\support_case "$HOME\.claude\skills\support_case"
+Copy-Item -Recurse -Force .\skills\ace-support-case "$HOME\.claude\skills\ace-support-case"
 ```
 
 ```bash
 # macOS / Linux
-cp -r ./skills/support_case ~/.claude/skills/support_case
+cp -r ./skills/ace-support-case ~/.claude/skills/ace-support-case
 ```
 
 Start a new Claude Code session afterwards so the skill is picked up.
@@ -103,7 +103,8 @@ bobmodes/
 ├── scripts/
 │   └── Import-BobModes.ps1          # imports .bobmodes into a project's .bob/custom_modes.yaml
 └── skills/
-    └── support_case/
+    └── ace-support-case/
+        ├── .bobmodes                # Bob mode definition (slug: ace-support-case)
         ├── SKILL.md                 # mode entry point (workflow + rules)
         ├── ace_support_case.md      # original working notes
         └── references/
@@ -122,4 +123,4 @@ bobmodes/
 
 ## License
 
-No license is specified. The bundled PDFs under `skills/support_case/references/documentation/` are IBM App Connect Enterprise product documentation and remain the property of IBM.
+No license is specified. The bundled PDFs under `skills/ace-support-case/references/documentation/` are IBM App Connect Enterprise product documentation and remain the property of IBM.
