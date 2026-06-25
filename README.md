@@ -20,7 +20,7 @@ It follows a structured, phase-by-phase workflow:
 4. **Problem-specific diagnostics** - a decision tree of exactly what to gather for each problem type (event-log windows, user/service trace, ODBC trace, abend/dump files, GSKit library-ordering checks, and more).
 5. **Analysis and case generation** - self-assessment of the collected data, an optional `ACELogAnalyser` run, and a ready-to-paste IBM case submission block (title, product, version, severity, business impact, structured description), with the bundle compressed and ready to attach.
 
-The mode is grounded in the full IBM ACE 13 "Troubleshooting and support" documentation set, included under `skills/ace-support-case/references/documentation/` as per-topic PDFs.
+The mode is grounded in the full IBM ACE 13 "Troubleshooting and support" documentation set, included under `bobmodes/ace-support-case/references/documentation/` as per-topic PDFs.
 
 ---
 
@@ -43,12 +43,12 @@ Skills are discovered from `~/.claude/skills/`. Copy the skill folder there:
 
 ```powershell
 # Windows / PowerShell
-Copy-Item -Recurse -Force .\skills\ace-support-case "$HOME\.claude\skills\ace-support-case"
+Copy-Item -Recurse -Force .\bobmodes\ace-support-case "$HOME\.claude\skills\ace-support-case"
 ```
 
 ```bash
 # macOS / Linux
-cp -r ./skills/ace-support-case ~/.claude/skills/ace-support-case
+cp -r ./bobmodes/ace-support-case ~/.claude/skills/ace-support-case
 ```
 
 Start a new Claude Code session afterwards so the skill is picked up.
@@ -58,7 +58,7 @@ Start a new Claude Code session afterwards so the skill is picked up.
 The included `scripts/Import-BobModes.ps1` is the Bob-mode importer: it scans a source path for `.bobmodes` files and merges their mode definitions into a target project's `.bob/custom_modes.yaml`, avoiding duplicates.
 
 ```powershell
-.\scripts\Import-BobModes.ps1 -SourcePath ".\skills" -TargetProjectPath "D:\Projects\YourProject"
+.\scripts\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\YourProject"
 ```
 
 The script will:
@@ -102,7 +102,7 @@ bobmodes/
 ├── README.md
 ├── scripts/
 │   └── Import-BobModes.ps1          # imports .bobmodes into a project's .bob/custom_modes.yaml
-└── skills/
+└── bobmodes/
     └── ace-support-case/
         ├── .bobmodes                # Bob mode definition (slug: ace-support-case)
         ├── SKILL.md                 # mode entry point (workflow + rules)
@@ -123,4 +123,4 @@ bobmodes/
 
 ## License
 
-No license is specified. The bundled PDFs under `skills/ace-support-case/references/documentation/` are IBM App Connect Enterprise product documentation and remain the property of IBM.
+No license is specified. The bundled PDFs under `bobmodes/ace-support-case/references/documentation/` are IBM App Connect Enterprise product documentation and remain the property of IBM.
