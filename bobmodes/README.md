@@ -1,18 +1,14 @@
-# Bob modes
+# Bob modes - per-mode documentation
 
-Detailed documentation for the modes in this repository. For a quick start, see the [root README](../README.md).
-
-This folder holds the modes themselves. Each mode is a directory containing a `.bobmodes` file (the Bob entry point), a `SKILL.md` (the Claude Code entry point), and a `references/` folder with the operational detail it loads at runtime.
-
-Currently shipped:
-
-- **ACE Support Case** (`ace-support-case`)
+What each mode does, how to use it, and its layout. For prerequisites and installation, see the [root README](../README.md).
 
 ---
 
-## What the ACE Support Case mode is
+## ACE Support Case (`ace-support-case`)
 
 The ACE Support Case mode turns the assistant into a **senior ACE support specialist**. When you hit a problem with IBM App Connect Enterprise and need to open an IBM support case (PMR / ticket), the mode walks you through the entire diagnostic-collection process so that IBM Support gets everything it needs the first time - no back-and-forth, no missing pieces.
+
+### What it does
 
 It follows a structured, phase-by-phase workflow:
 
@@ -24,60 +20,9 @@ It follows a structured, phase-by-phase workflow:
 
 The mode is grounded in the full IBM ACE 13 "Troubleshooting and support" documentation set, included under `ace-support-case/references/documentation/` as per-topic PDFs.
 
----
+The diagnostic commands it suggests (`mqsiservice`, `aceDataCollector`, `mqsireportproperties`, etc.) must be run from an **ACE Console** on Windows, or after sourcing `mqsiprofile` on Linux/UNIX. The mode only runs the assistant through the workflow and generates the commands / scripts - you run the actual ACE diagnostic commands against your own environment.
 
-## Prerequisites
-
-- **Bob** in VS Code (modes live in `.bob/custom_modes.yaml`). The mode also works as a **[Claude Code](https://claude.com/claude-code)** skill if you prefer that (skills are discovered from `~/.claude/skills/`).
-- **Windows + PowerShell** to run `Import-BobModes.ps1`. On macOS/Linux, install manually (see below).
-- **IBM App Connect Enterprise** on the machine you are diagnosing. The workflow assumes ACE v11.0.0.8 or later for the bundled `aceDataCollector`; v12 and v13 are fully supported.
-- The diagnostic commands the mode suggests (`mqsiservice`, `aceDataCollector`, `mqsireportproperties`, etc.) must be run from an **ACE Console** on Windows, or after sourcing `mqsiprofile` on Linux/UNIX.
-
-> The mode only runs the assistant through the workflow and generates the commands / scripts. You run the actual ACE diagnostic commands against your own environment.
-
----
-
-## Installation
-
-All commands below are run from the repository root.
-
-### Into a Bob (VS Code) project with `Import-BobModes.ps1` (recommended)
-
-The included `scripts/Import-BobModes.ps1` is the Bob-mode importer: it scans a source path for `.bobmodes` files and merges their mode definitions into a target project's `.bob/custom_modes.yaml`, avoiding duplicates.
-
-```powershell
-git clone https://github.com/matthiasblomme/bobmodes.git
-cd bobmodes
-.\scripts\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\YourProject"
-```
-
-The script will:
-
-- detect every `.bobmodes` file under the source path,
-- create or update `.bob/custom_modes.yaml` in the target project,
-- merge modes intelligently, skipping any whose slug already exists.
-
-After importing, reload your VS Code window (`Ctrl + Shift + P` -> `Reload Window`) to activate the mode. It appears as **ACE Support Case** in Bob's mode selector, with a `/ace-support-case` slash command.
-
-### As a Claude Code skill (optional)
-
-The same mode also ships as a Claude Code skill (`SKILL.md`). Skills are discovered from `~/.claude/skills/`, so copy the folder there:
-
-```powershell
-# Windows / PowerShell
-Copy-Item -Recurse -Force .\bobmodes\ace-support-case "$HOME\.claude\skills\ace-support-case"
-```
-
-```bash
-# macOS / Linux
-cp -r ./bobmodes/ace-support-case ~/.claude/skills/ace-support-case
-```
-
-Start a new Claude Code session afterwards so the skill is picked up.
-
----
-
-## How to use the ACE Support Case mode
+### How to use it
 
 Once installed, just describe your ACE problem in natural language. The mode triggers when you:
 
@@ -99,28 +44,25 @@ I need to open a PMR for a deployment failure on my standalone integration serve
 
 The mode then runs the triage questions, tells you exactly which commands to run (or generates a script if you do not have server access), helps you assemble the bundle into an `ACE_SupportCase_<NodeName>_<YYYYMMDD>/` folder, and produces a ready-to-paste IBM case submission.
 
----
-
-## Mode layout
+### Mode layout
 
 ```
-bobmodes/
-└── ace-support-case/
-    ├── .bobmodes                # Bob mode definition (slug: ace-support-case)
-    ├── SKILL.md                 # Claude Code entry point (workflow + rules)
-    ├── ace_support_case.md      # original working notes
-    └── references/
-        ├── workflow.md          # authoritative phase-by-phase workflow
-        ├── diagnostics_guide.md # command / path / tool reference
-        ├── manifest.csv / .json # index of the bundled IBM docs
-        └── documentation/       # IBM ACE 13 troubleshooting docs (PDF)
+ace-support-case/
+├── .bobmodes                # Bob mode definition (slug: ace-support-case)
+├── SKILL.md                 # Claude Code entry point (workflow + rules)
+├── ace_support_case.md      # original working notes
+└── references/
+    ├── workflow.md          # authoritative phase-by-phase workflow
+    ├── diagnostics_guide.md # command / path / tool reference
+    ├── manifest.csv / .json # index of the bundled IBM docs
+    └── documentation/       # IBM ACE 13 troubleshooting docs (PDF)
 ```
 
 ---
 
 ## Disclaimers
 
-- **Review and validate everything the mode produces.** It uses AI assistance and can make mistakes, misread requirements, or miss edge cases. You remain responsible for testing and for compliance with your organisation's standards.
+- **Review and validate everything the modes produce.** They use AI assistance and can make mistakes, misread requirements, or miss edge cases. You remain responsible for testing and for compliance with your organisation's standards.
 - **Never commit credentials or sensitive data** into mode configurations or collected diagnostics. Scrub diagnostic bundles before sharing.
 
 ## License
