@@ -18,7 +18,7 @@ It follows a structured, phase-by-phase workflow:
 4. **Problem-specific diagnostics** - a decision tree of exactly what to gather for each problem type (event-log windows, user/service trace, ODBC trace, abend/dump files, GSKit library-ordering checks, and more).
 5. **Analysis and case generation** - self-assessment of the collected data, an optional `ACELogAnalyser` run, and a ready-to-paste IBM case submission block (title, product, version, severity, business impact, structured description), with the bundle compressed and ready to attach.
 
-The mode is grounded in the full IBM ACE 13 "Troubleshooting and support" documentation set, included under `ace-support-case/references/documentation/` as per-topic PDFs.
+The mode is distilled from IBM's ACE 13 "Troubleshooting and support" documentation. The operational detail it actually loads lives in `references/workflow.md` and `references/diagnostics_guide.md`; `references/manifest.csv` lists the relevant IBM doc pages by URL so you can go to the source.
 
 The diagnostic commands it suggests (`mqsiservice`, `aceDataCollector`, `mqsireportproperties`, etc.) must be run from an **ACE Console** on Windows, or after sourcing `mqsiprofile` on Linux/UNIX. The mode only runs the assistant through the workflow and generates the commands / scripts - you run the actual ACE diagnostic commands against your own environment.
 
@@ -54,8 +54,7 @@ ace-support-case/
 └── references/
     ├── workflow.md          # authoritative phase-by-phase workflow
     ├── diagnostics_guide.md # command / path / tool reference
-    ├── manifest.csv / .json # index of the bundled IBM docs
-    └── documentation/       # IBM ACE 13 troubleshooting docs (PDF)
+    └── manifest.csv / .json # links to the relevant IBM doc pages (by URL)
 ```
 
 ---
@@ -67,4 +66,4 @@ ace-support-case/
 
 ## License
 
-No license is specified. The bundled PDFs under `ace-support-case/references/documentation/` are IBM App Connect Enterprise product documentation and remain the property of IBM.
+No license is specified. IBM App Connect Enterprise documentation is referenced by link (see `references/manifest.csv`), not redistributed here, and remains the property of IBM.
