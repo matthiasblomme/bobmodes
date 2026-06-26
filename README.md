@@ -1,6 +1,6 @@
 # bobmodes
 
-A custom mode / skill for IBM App Connect Enterprise (ACE) work.
+Custom **Bob modes** for IBM App Connect Enterprise (ACE) work. Each mode also ships as a Claude Code skill (`SKILL.md`) for anyone who wants it, but Bob is the primary target.
 
 This repository currently ships one mode:
 
@@ -26,7 +26,7 @@ The mode is grounded in the full IBM ACE 13 "Troubleshooting and support" docume
 
 ## Prerequisites
 
-- An assistant that loads skills/modes from this folder structure - for example **[Claude Code](https://claude.com/claude-code)** (skills are discovered from `~/.claude/skills/`), or **Bob** in VS Code for `.bob/custom_modes.yaml`-based modes.
+- **Bob** in VS Code (modes live in `.bob/custom_modes.yaml`). The mode also works as a **[Claude Code](https://claude.com/claude-code)** skill if you prefer that (skills are discovered from `~/.claude/skills/`).
 - **Windows + PowerShell** to run `Import-BobModes.ps1`. On macOS/Linux, install manually (see below).
 - **IBM App Connect Enterprise** on the machine you are diagnosing. The workflow assumes ACE v11.0.0.8 or later for the bundled `aceDataCollector`; v12 and v13 are fully supported.
 - The diagnostic commands the mode suggests (`mqsiservice`, `aceDataCollector`, `mqsireportproperties`, etc.) must be run from an **ACE Console** on Windows, or after sourcing `mqsiprofile` on Linux/UNIX.
@@ -37,9 +37,27 @@ The mode is grounded in the full IBM ACE 13 "Troubleshooting and support" docume
 
 ## Installation
 
-### As a Claude Code skill (recommended)
+### Into a Bob (VS Code) project with `Import-BobModes.ps1` (recommended)
 
-Skills are discovered from `~/.claude/skills/`. Copy the skill folder there:
+The included `scripts/Import-BobModes.ps1` is the Bob-mode importer: it scans a source path for `.bobmodes` files and merges their mode definitions into a target project's `.bob/custom_modes.yaml`, avoiding duplicates.
+
+```powershell
+git clone https://github.com/matthiasblomme/bobmodes.git
+cd bobmodes
+.\scripts\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\YourProject"
+```
+
+The script will:
+
+- detect every `.bobmodes` file under the source path,
+- create or update `.bob/custom_modes.yaml` in the target project,
+- merge modes intelligently, skipping any whose slug already exists.
+
+After importing, reload your VS Code window (`Ctrl + Shift + P` -> `Reload Window`) to activate the mode. It appears as **ACE Support Case** in Bob's mode selector.
+
+### As a Claude Code skill (optional)
+
+The same mode also ships as a Claude Code skill (`SKILL.md`). Skills are discovered from `~/.claude/skills/`, so copy the folder there:
 
 ```powershell
 # Windows / PowerShell
@@ -52,22 +70,6 @@ cp -r ./bobmodes/ace-support-case ~/.claude/skills/ace-support-case
 ```
 
 Start a new Claude Code session afterwards so the skill is picked up.
-
-### Into a Bob (VS Code) project with `Import-BobModes.ps1`
-
-The included `scripts/Import-BobModes.ps1` is the Bob-mode importer: it scans a source path for `.bobmodes` files and merges their mode definitions into a target project's `.bob/custom_modes.yaml`, avoiding duplicates.
-
-```powershell
-.\scripts\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\YourProject"
-```
-
-The script will:
-
-- detect every `.bobmodes` file under the source path,
-- create or update `.bob/custom_modes.yaml` in the target project,
-- merge modes intelligently, skipping any whose slug already exists.
-
-After importing, reload your VS Code window to activate the modes.
 
 ---
 
