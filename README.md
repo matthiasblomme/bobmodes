@@ -6,19 +6,7 @@ A Bob mode is a persona with its own instructions, tools, and triggers. These on
 
 ## Modes
 
-### ACE Support Case (`ace-support-case`)
-
-Turns the assistant into a senior ACE support specialist. When something breaks and you need to open an IBM support case (PMR / ticket), it walks you through gathering a complete diagnostic bundle so IBM Support gets everything the first time, then writes a ready-to-paste case submission.
-
-It works in five phases:
-
-1. **Triage** - pin down the symptom, timing, and scope, then classify the problem.
-2. **Runtime access check** - run the commands directly, or hand you a script if you have no shell on the server.
-3. **Baseline collection** - `mqsiservice -v` plus `aceDataCollector`.
-4. **Problem-specific diagnostics** - the right traces, logs, and dumps for the problem type.
-5. **Analysis and case generation** - an organised bundle plus a structured IBM case submission.
-
-It is grounded in the IBM ACE 13 "Troubleshooting and support" documentation, which is bundled into the mode.
+- **ACE Support Case** (`ace-support-case`) - walks you through collecting a complete diagnostic bundle for an IBM ACE support case, then writes a ready-to-paste IBM case submission.
 
 ## Install (quick start)
 
@@ -32,7 +20,7 @@ Reload VS Code and pick **ACE Support Case** from Bob's mode selector. (It also 
 
 ## More
 
-Full details - prerequisites, the Claude Code option, usage examples, and mode layout - are in **[bobmodes/README.md](bobmodes/README.md)**.
+Full per-mode details - what it does, prerequisites, the Claude Code option, usage examples, and mode layout - are in **[bobmodes/README.md](bobmodes/README.md)**.
 
 ## Repository layout
 
