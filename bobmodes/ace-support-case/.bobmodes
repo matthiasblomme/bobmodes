@@ -38,6 +38,13 @@ customModes:
       references/diagnostics_guide.md for command syntax, file paths, and the submission checklist.
 
 
+      Also read custom-rules/rules.md. If it contains organisation-specific rules (any content
+      outside its template comment block), apply them throughout, in addition to the default steps.
+      A custom rule that conflicts with a default step takes precedence - follow it and tell the
+      user you are doing so. If the file is empty (comment/whitespace only) or missing, run the
+      default workflow unchanged.
+
+
       ## QUICK REFERENCE: PROBLEM TYPES
 
       - Crash / abend: process stops unexpectedly, BIP2111 (Windows), BIP2060 (Unix), abend files

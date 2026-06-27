@@ -8,6 +8,8 @@ A Bob mode is a persona with its own instructions, tools, and triggers. These on
 
 - **ACE Support Case** (`ace-support-case`) - walks you through collecting a complete diagnostic bundle for an IBM ACE support case, then writes a ready-to-paste IBM case submission. [Details](bobmodes/README.md).
 
+You can tailor a mode to your organisation by adding rules to its `custom-rules/rules.md` - see the [per-mode docs](bobmodes/README.md).
+
 ## Prerequisites
 
 - **Bob** in VS Code (modes live in `.bob/custom_modes.yaml`). The modes also work as **[Claude Code](https://claude.com/claude-code)** skills if you prefer that (skills are discovered from `~/.claude/skills/`).
@@ -57,5 +59,5 @@ bobmodes/
 │   └── Import-BobModes.ps1    # imports modes into a project's .bob/custom_modes.yaml
 └── bobmodes/
     ├── README.md             # per-mode documentation
-    └── ace-support-case/     # the mode (.bobmodes + SKILL.md + references)
+    └── ace-support-case/     # the mode (.bobmodes + SKILL.md + references + custom-rules)
 ```

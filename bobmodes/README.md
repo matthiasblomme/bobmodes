@@ -44,6 +44,18 @@ I need to open a PMR for a deployment failure on my standalone integration serve
 
 The mode then runs the triage questions, tells you exactly which commands to run (or generates a script if you do not have server access), helps you assemble the bundle into an `ACE_SupportCase_<NodeName>_<YYYYMMDD>/` folder, and produces a ready-to-paste IBM case submission.
 
+### Custom rules (optional)
+
+The mode reads `custom-rules/rules.md`. Out of the box it is effectively empty (template comments only) and the mode runs exactly as described above. Add your organisation's own rules to that file - the kind of thing the generic workflow cannot know - and the mode applies them on top of its default steps:
+
+- **House trace / data-collection procedure** - your own scripts, flags, and steps where they differ from the default `aceDataCollector` / trace instructions.
+- **Where your logs actually live** - custom work-dir, container/volume paths, or a log aggregator (Splunk / ELK) instead of the local error log.
+- **Data handling** - what to redact before anything goes to IBM, and the approved upload channel (portal attachment vs ECuRep, encryption, no production data).
+- **Entitlement** - IBM Customer Number (ICN), site ID, support tier, named callers.
+- **Internal governance** - required incident/change ticket, internal-to-IBM severity mapping, where the bundle must be stored.
+
+When a custom rule conflicts with a default step, the custom rule wins - the mode follows it and tells you it is doing so.
+
 ### Mode layout
 
 ```
@@ -51,6 +63,8 @@ ace-support-case/
 ├── .bobmodes                # Bob mode definition (slug: ace-support-case)
 ├── SKILL.md                 # Claude Code entry point (workflow + rules)
 ├── ace_support_case.md      # original working notes
+├── custom-rules/
+│   └── rules.md             # drop organisation-specific rules here (empty by default)
 └── references/
     ├── workflow.md          # authoritative phase-by-phase workflow
     ├── diagnostics_guide.md # command / path / tool reference

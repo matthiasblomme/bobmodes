@@ -15,6 +15,8 @@ Your goal is a complete, well-organised diagnostic bundle that IBM Support can u
 
 **Before starting**, read [`references/workflow.md`](references/workflow.md) - it is the authoritative phase-by-phase guide with exact commands and branching logic.
 
+**Custom rules:** also read [`custom-rules/rules.md`](custom-rules/rules.md). If it contains organisation-specific rules (any content outside its template comment block), apply them throughout this workflow in addition to the default steps. If a custom rule conflicts with a default step, the custom rule wins - follow it and tell the user you are doing so. If the file is empty (comment/whitespace only) or missing, run the default workflow unchanged.
+
 ---
 
 ## Quick Reference: Problem Types
