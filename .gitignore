@@ -1,2 +1,5 @@
 # IBM product documentation is referenced by link, never redistributed here
 bobmodes/*/references/documentation/
+
+# Per-project Bob output created when importing modes into a target project
+.bob/

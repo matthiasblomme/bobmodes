@@ -15,7 +15,7 @@
     The path to the target project where custom_modes.yaml should be created/updated
 
 .EXAMPLE
-    .\Import-BobModes.ps1 -SourcePath "D:\git\i8c_bobmodes\ace_modes" -TargetProjectPath "D:\Projects\MyProject"
+    .\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\MyProject"
 
 .EXAMPLE
     .\Import-BobModes.ps1 -TargetProjectPath "D:\Projects\MyProject"
