@@ -27,19 +27,25 @@ Ask follow-up questions one topic at a time, in this order, only for what has no
 
 ### Step 3 - Classify
 
-Use the answers to identify the problem type:
+Classify in two levels: the high-level category sets *how* you collect; the sub-type picks the exact commands.
 
-**Classify the problem type** from the user's answers. Use this to determine what diagnostics to collect:
+**First, the high-level category:**
 
-| Problem type | Key indicators |
+| Category | What it looks like | How you collect |
+|---|---|---|
+| Functional | Something is broken: errors, abends, crashes, wrong output, failed deploys, DB/SSL errors | Reactive - gather the artifacts the failure already left behind |
+| Performance | It runs, but badly: high CPU/memory, poor throughput, latency | Proactive - start trace at debug, reproduce, capture resource use, run ACELogAnalyser |
+| General / unknown | Symptoms unclear or mixed | Treat as both |
+
+**Then, for a Functional problem, the sub-type** (Performance is its own path, no sub-type):
+
+| Functional sub-type | Key indicators |
 |---|---|
 | Crash / abend | Process stops, BIP2111 (Windows), BIP2060 (Unix), abend files found |
-| Performance | Slow message processing, high CPU/memory, throughput degradation |
-| Functional / message flow | Wrong output, messages stuck, flow behaving unexpectedly |
+| Message flow | Wrong output, messages stuck, flow behaving unexpectedly |
 | Deployment / start-up | Node/IS fails to start, BIP8875-range errors, deploy fails |
 | Database / ODBC | ODBC errors, SQL codes, database connectivity |
 | SSL / TLS / GSKit | Certificate errors, SSL handshake failure, SQL10013N / BIP2322E |
-| General / unknown | Multiple symptoms or unclear - collect all |
 
 **Internal C++ class names are clues, not facts.** Names in `.Abend` stack frames or loaded modules (e.g. `ImbDatabaseInputNode`, `imbdfsql.lil`) hint at the area but are **not** authoritative palette node types or database vendors. Treat them as leads to confirm - ask the user for the actual palette node type (and DB vendor) before naming either in the case description. Do not, e.g., report a "DatabaseInput node" or "Db2" purely because a frame or module said so.
 
@@ -144,7 +150,7 @@ oc rsync <POD_NAME>:/home/aceuser/ACE_Data_Collector_<timestamp>_SIS ./ACE_Suppo
 
 ## Phase 4: Problem-Specific Diagnostics
 
-Execute the steps for the classified problem type. Phases 4a-4g can overlap - collect all that apply.
+Execute the steps for the classified category. **Functional** problems (4b, 4d-4g) are about gathering what the failure already produced; **Performance** (4c) is about capturing a reproduction. 4a runs for everything. Sections can overlap - collect all that apply.
 
 ### 4a. All problems - check for abend files
 
@@ -222,7 +228,7 @@ java -Xmx2000m -jar <INSTALL_DIR>/server/tools/aceloganalyser.jar \
 
 **Check for trace wrapping:** if the first and last timestamps in the trace are closer together than the reproduction window, the trace wrapped and data was lost. Increase trace file size with `mqsichangetrace` and re-collect.
 
-### 4d. Functional / Message Flow
+### 4d. Message Flow
 
 ```bash
 # 1. User trace at normal level

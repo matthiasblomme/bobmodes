@@ -19,17 +19,25 @@ Your goal is a complete, well-organised diagnostic bundle that IBM Support can u
 
 ---
 
-## Quick Reference: Problem Types
+## Quick Reference: Problem Category
 
-| Problem type | Key indicators |
+Decide the high-level category first - it sets *how* you collect, not just what.
+
+| Category | What it looks like | How you collect |
+|---|---|---|
+| **Functional** | Something is broken: errors, abends, crashes, wrong output, failed deploys, DB/SSL errors | Reactive - gather the artifacts the failure already left behind (abend files, event-log window, error text, failing BAR) |
+| **Performance** | It runs, but badly: high CPU/memory, poor throughput, latency | Proactive - start trace at debug, reproduce the slowness, capture resource use, run ACELogAnalyser |
+| **General / unknown** | Symptoms unclear or mixed | Treat as both - functional artifacts plus the performance path |
+
+For a **Functional** problem, refine into a specific type to pick the exact commands:
+
+| Functional sub-type | Key indicators |
 |---|---|
-| Crash / abend | Process stops unexpectedly, BIP2111 (Windows), BIP2060 (Unix), abend files |
-| Performance | Slow throughput, high CPU/memory, message processing delays |
-| Functional / message flow | Wrong output, stuck messages, unexpected flow behaviour |
+| Crash / abend | BIP2111 (Windows), BIP2060 (Unix), abend files |
+| Message flow | Wrong output, stuck messages, unexpected flow behaviour |
 | Deployment / start-up | Node/IS fails to start or deploy, BIP8875-range errors |
 | Database / ODBC | ODBC errors, SQL codes, connection failures |
 | SSL / TLS / GSKit | Certificate errors, handshake failures, SQL10013N / BIP2322E |
-| General / unknown | Multiple or unclear symptoms - collect everything |
 
 ---
 
@@ -53,7 +61,7 @@ Are there any visible error codes, BIP messages, or abend files?
 - Which integration node and integration server(s) are affected? (or is this a standalone integration server?)
 - Any recent changes before this started? (deployments, config changes, patches, OS updates)
 
-**Step 3 - Classify** the problem type from the table above, then proceed to Phase 2.
+**Step 3 - Classify.** First decide the high-level category - **Functional** (something is broken) or **Performance** (it runs, but badly). That choice sets your collection mode for the rest of the session. For a Functional problem, also pick the specific sub-type from the table above. If symptoms are unclear or mixed, treat it as General and collect both ways. Then proceed to Phase 2.
 
 Keep the conversation focused. Do not ask for information that has already been provided.
 
@@ -79,17 +87,17 @@ See [`references/diagnostics_guide.md`](references/diagnostics_guide.md) for exa
 
 ### Phase 4: Problem-Specific Diagnostics
 
-Collect based on the classified problem type - see [`references/workflow.md`](references/workflow.md) Phase 4 for the complete decision tree with ready-to-use commands:
+Collect based on the category. **Functional** problems are about gathering what the failure already produced; **Performance** is about capturing a reproduction. See [`references/workflow.md`](references/workflow.md) Phase 4 for the complete decision tree with ready-to-use commands:
 
-| Problem type | Key additions |
+| Category / type | Key additions |
 |---|---|
 | All / always | Check abend files in `errors/` directory |
-| Crash / abend | Event Viewer export (±30 min around the event, not the full log) + abend/dump files |
+| Functional - Crash / abend | Event Viewer export (±30 min around the event, not the full log) + abend/dump files |
+| Functional - Message flow | User trace (normal) + event log + project interchange via `mqsipackagebar` |
+| Functional - Deployment / start-up | `mqsicvp` + service trace + JVM property check + event log |
+| Functional - Database / ODBC | DSN inventory first (`mqsireportdbparms -n "*"` + ODBC.INI/ODBCINST.INI export) → then ODBC trace + vendor-specific tools once the vendor is confirmed |
+| Functional - SSL / TLS / GSKit | Library path ordering (MQ GSKit before Db2/Oracle) + user trace |
 | Performance | User trace (debug) + ACELogAnalyser `traceAnalysis` + `mqsireportproperties` (Nagle check) |
-| Functional / message flow | User trace (normal) + event log + project interchange via `mqsipackagebar` |
-| Deployment / start-up | `mqsicvp` + service trace + JVM property check + event log |
-| Database / ODBC | DSN inventory first (`mqsireportdbparms -n "*"` + ODBC.INI/ODBCINST.INI export) → then ODBC trace + vendor-specific tools once the vendor is confirmed |
-| SSL / TLS / GSKit | Library path ordering (MQ GSKit before Db2/Oracle) + user trace |
 | General / unknown | All of the above |
 
 ### Phase 5: Analysis & Case Generation
