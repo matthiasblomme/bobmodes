@@ -3,3 +3,6 @@ bobmodes/*/references/documentation/
 
 # Per-project Bob output created when importing modes into a target project
 .bob/
+
+# Private per-mode identity files (e.g. ibm-champion-report/.env); never commit (.env.sample is kept)
+bobmodes/*/.env

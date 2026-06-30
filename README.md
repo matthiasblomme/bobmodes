@@ -1,12 +1,13 @@
 # bobmodes
 
-Custom **Bob modes** for IBM App Connect Enterprise (ACE) work. Each mode also ships as a Claude Code skill (`SKILL.md`), but Bob is the primary target.
+Custom **Bob modes** for IBM App Connect Enterprise (ACE) work. Most modes also ship as a Claude Code skill (`SKILL.md`), but Bob is the primary target.
 
 A Bob mode is a persona with its own instructions, tools, and triggers. These ones bake in the ACE workflows I would otherwise run from memory and a pile of bookmarked doc pages.
 
 ## Modes
 
 - **ACE Support Case** (`ace-support-case`) - walks you through collecting a complete diagnostic bundle for an IBM ACE support case, then writes a ready-to-paste IBM case submission. [Details](bobmodes/README.md).
+- **IBM Champion Report** (`ibm-champion-report`) - assembles an IBM Champion act-of-advocacy submission for the Activity Report form: pulls your identity from a private `.env`, drafts the description, and produces a proven prefilled-form URL plus a copy-paste sheet (never auto-submits). [Details](bobmodes/README.md).
 
 You can tailor a mode to your organisation by adding rules to its `custom-rules/rules.md` - see the [per-mode docs](bobmodes/README.md).
 
@@ -59,5 +60,6 @@ bobmodes/
 │   └── Import-BobModes.ps1    # imports modes into a project's .bob/custom_modes.yaml
 └── bobmodes/
     ├── README.md             # per-mode documentation
-    └── ace-support-case/     # the mode (.bobmodes + SKILL.md + references + custom-rules)
+    ├── ace-support-case/     # the mode (.bobmodes + SKILL.md + references + custom-rules)
+    └── ibm-champion-report/  # Bob mode only (.bobmodes + .env.sample + references; no SKILL.md)
 ```

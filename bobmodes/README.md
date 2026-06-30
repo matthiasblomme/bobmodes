@@ -73,6 +73,68 @@ ace-support-case/
 
 ---
 
+## IBM Champion Report (`ibm-champion-report`)
+
+The IBM Champion Report mode helps you report an IBM Champion (or Rising Champion) **act of advocacy** on the IBM Champion Program Activity Report form (the Airtable form behind `ibm.biz/champ-report`). It assembles every value, polishes the free-text description to the 250-word limit, and produces a **proven prefilled-form URL** plus a copy-paste field sheet. It never ticks the consent checkbox and never submits - you do the final review, consent, and click.
+
+### What it does
+
+1. **Load identity** - reads your stable identity (Champion Program ID, name, emails) from a private, gitignored `.env` (copy `.env.sample` once).
+2. **Gather the activity** - one act at a time: what you did, the Act-of-Advocacy type, the product(s), a link (effectively mandatory), the date, and whether IBM may amplify it.
+3. **Write the description** - drafts each "Description of this Activity" for a reviewer who has not seen the work, factual and within 250 words, and reports the word count.
+4. **Confirm the dropdowns** - the Act-of-Advocacy (40) and Product(s) (516) option lists are verified verbatim from the live form; the mode picks the exact entry and confirms it with you.
+5. **Produce the output** - a prefilled URL that lands 8 fields (identity, Act of Advocacy, Product(s), Date) via verified field-ID / name params, plus a copy-paste sheet for the fields that cannot be prefilled (Description, Link, Amplify, How-many-more, PRIVACY). If a browser MCP is available it can fill the form in place and verify, but never submits.
+
+The authoritative field spec - the field-ID prefill map, date format, word limits, and the full verified option lists - lives in `references/form_fields.md`.
+
+### How to use it
+
+Once installed, describe the activity you want to report. The mode triggers when you:
+
+- want to report or register an IBM Champion activity / act of advocacy,
+- ask to "fill in the champ-report form" or mention `ibm.biz/champ-report`,
+- want to log a blog, talk, video, idea, or code contribution for a Champion badge.
+
+Example prompts:
+
+```
+Report my IBM Champion activity: I published a blog on community.ibm.com about MCP in ACE.
+
+Log this idea I submitted on the IBM Ideas portal as an act of advocacy: https://ideas.ibm.com/ideas/APPC-I-1249
+
+Fill in the champ-report form for a conference talk I gave last month.
+```
+
+The mode pulls your identity from `.env`, gathers the activity, drafts the description, and hands back the prefilled URL plus the copy-paste sheet.
+
+### One-time setup (`.env`)
+
+Copy `.env.sample` to `.env` in the mode folder and fill in your real values once:
+
+```
+CHAMPION_PROGRAM_ID=...
+FIRST_NAME=...
+LAST_NAME=...
+PRIMARY_EMAIL=...
+ALTERNATE_EMAIL=...
+```
+
+`.env` is gitignored and stays private; only `.env.sample` (placeholders) is committed.
+
+### Mode layout
+
+```
+ibm-champion-report/
+├── .bobmodes                # Bob mode definition (slug: ibm-champion-report)
+├── .env.sample              # copy to .env and fill once (private; gitignored)
+└── references/
+    └── form_fields.md       # verified field spec + prefill map + full option lists
+```
+
+This mode ships as a **Bob mode only** here - there is no `SKILL.md` in this repo.
+
+---
+
 ## Disclaimers
 
 - **Review and validate everything the modes produce.** They use AI assistance and can make mistakes, misread requirements, or miss edge cases. You remain responsible for testing and for compliance with your organisation's standards.
