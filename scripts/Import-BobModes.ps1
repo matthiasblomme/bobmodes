@@ -14,8 +14,17 @@
 .PARAMETER TargetProjectPath
     The path to the target project where custom_modes.yaml should be created/updated
 
+.PARAMETER Replace
+    Overwrite modes that already exist in the target instead of skipping them. Without this
+    switch, a mode whose slug is already present is left untouched; with it, the existing
+    definition is replaced by the one from the source.
+
 .EXAMPLE
     .\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\MyProject"
+
+.EXAMPLE
+    .\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\MyProject" -Replace
+    # Overwrites any mode already present instead of skipping it
 
 .EXAMPLE
     .\Import-BobModes.ps1 -TargetProjectPath "D:\Projects\MyProject"
@@ -23,7 +32,7 @@
 
 .NOTES
     Author: Bob Mode Import Script
-    Version: 1.0
+    Version: 1.1
 #>
 
 [CmdletBinding()]
@@ -32,7 +41,10 @@ param(
     [string]$SourcePath = (Get-Location).Path,
     
     [Parameter(Mandatory=$true)]
-    [string]$TargetProjectPath
+    [string]$TargetProjectPath,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Replace
 )
 
 # Function to parse YAML-like content from .bobmodes files
@@ -71,6 +83,30 @@ function Get-ModeSlugs {
     }
     
     return $slugs
+}
+
+# Function to split YAML content into per-mode blocks (slug + text)
+function Get-ModeBlocks {
+    param([string]$YamlContent)
+
+    $blocks = @()
+
+    # Drop everything up to and including the "customModes:" header
+    $body = $YamlContent -replace '(?s)^.*?customModes:\s*\r?\n', ''
+
+    # Split at the start of each mode entry ("- slug:"), keeping the delimiter with its block
+    $parts = [regex]::Split($body, '(?m)(?=^\s*-\s+slug:)')
+
+    foreach ($part in $parts) {
+        if ($part -match '(?m)^\s*-\s+slug:\s*(.+?)\s*$') {
+            $blocks += [pscustomobject]@{
+                Slug = $matches[1].Trim()
+                Text = $part.TrimEnd()
+            }
+        }
+    }
+
+    return ,$blocks
 }
 
 # Main script execution
@@ -154,57 +190,62 @@ if (Test-Path -Path $customModesFile) {
     Write-Host "Found existing custom_modes.yaml" -ForegroundColor Yellow
     
     $existingContent = Get-Content -Path $customModesFile -Raw
-    $existingSlugs = Get-ModeSlugs -YamlContent $existingContent
-    
+    $existingBlocks  = Get-ModeBlocks -YamlContent $existingContent
+    $existingSlugs   = @($existingBlocks | ForEach-Object { $_.Slug })
+
     if ($existingSlugs.Count -gt 0) {
         Write-Host "  Existing modes: $($existingSlugs -join ', ')" -ForegroundColor Cyan
     }
-    
-    # Filter out modes that already exist
-    $newModes = $allModes | Where-Object {
-        $modeFile = $_
-        $hasNewSlug = $false
-        
-        foreach ($slug in $modeFile.Slugs) {
-            if ($slug -notin $existingSlugs) {
-                $hasNewSlug = $true
-                break
-            }
+
+    # Collect the incoming mode blocks from every discovered .bobmodes file
+    $incomingBlocks = @()
+    foreach ($mode in $allModes) {
+        $incomingBlocks += Get-ModeBlocks -YamlContent $mode.Content
+    }
+    $incomingSlugs = @($incomingBlocks | ForEach-Object { $_.Slug })
+
+    if ($Replace) {
+        # Overwrite: drop any existing block whose slug is being imported, keep the rest,
+        # then add all incoming blocks.
+        $replaced = @($existingSlugs | Where-Object { $_ -in $incomingSlugs })
+        $added    = @($incomingSlugs | Where-Object { $_ -notin $existingSlugs })
+        $kept     = @($existingBlocks | Where-Object { $_.Slug -notin $incomingSlugs })
+        $finalBlocks = @($kept) + @($incomingBlocks)
+
+        if ($replaced.Count -gt 0) {
+            Write-Host "  Replacing: $($replaced -join ', ')" -ForegroundColor Yellow
         }
-        
-        return $hasNewSlug
+        if ($added.Count -gt 0) {
+            Write-Host "  Adding:    $($added -join ', ')" -ForegroundColor Yellow
+        }
     }
-    
-    if ($newModes.Count -eq 0) {
+    else {
+        # Default: skip any incoming block whose slug already exists
+        $toAdd = @($incomingBlocks | Where-Object { $_.Slug -notin $existingSlugs })
+
+        if ($toAdd.Count -eq 0) {
+            Write-Host ""
+            Write-Host "All modes already exist in custom_modes.yaml. No changes needed." -ForegroundColor Green
+            Write-Host "  (re-run with -Replace to overwrite existing modes)" -ForegroundColor Gray
+            exit 0
+        }
+
         Write-Host ""
-        Write-Host "All modes already exist in custom_modes.yaml. No changes needed." -ForegroundColor Green
-        exit 0
+        Write-Host "Modes to add: $(@($toAdd).Count)" -ForegroundColor Yellow
+        $finalBlocks = @($existingBlocks) + @($toAdd)
     }
-    
-    Write-Host ""
-    Write-Host "Modes to add: $($newModes.Count)" -ForegroundColor Yellow
-    
-    # Append new modes to existing file
-    $existingContent = Get-Content -Path $customModesFile -Raw
-    
-    # Remove the trailing content after customModes array if any
-    # and prepare to append new modes
-    $newContent = $existingContent.TrimEnd()
-    
-    foreach ($mode in $newModes) {
-        # Extract just the mode definitions (skip the "customModes:" header)
-        $modeContent = $mode.Content -replace '(?s)^customModes:\s*\n', ''
-        
-        # Add proper indentation for array items
-        $newContent += "`n" + $modeContent.TrimEnd()
+
+    # Rebuild the file from the final set of mode blocks
+    $newContent = "customModes:`n"
+    foreach ($b in $finalBlocks) {
+        $newContent += $b.Text.TrimEnd() + "`n"
     }
-    
-    # Write the merged content
-    Set-Content -Path $customModesFile -Value $newContent -NoNewline
-    
+
+    Set-Content -Path $customModesFile -Value $newContent.TrimEnd() -NoNewline
+
     Write-Host ""
-    Write-Host "Successfully merged modes into: $customModesFile" -ForegroundColor Green
-    
+    Write-Host "Successfully wrote modes into: $customModesFile" -ForegroundColor Green
+
 } else {
     Write-Host "Creating new custom_modes.yaml..." -ForegroundColor Yellow
     
