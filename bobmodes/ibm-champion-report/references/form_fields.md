@@ -188,14 +188,41 @@ in (or switch to an extension-based MCP), then resume.
 
 1. **Navigate** to the proven prefilled URL above (identity + Act + Product + Date land
    automatically).
-2. **Snapshot** and confirm those 8 fields populated. Match fields by visible **label
-   text**, not brittle selectors - Airtable markup is generated.
-3. **Type the manual fields:** Description (polished, <=250 words), Link (URL).
-4. **Amplify checkbox:** tick **only** if the user explicitly allowed amplification.
-5. **Re-snapshot and verify:** report each field as set / not set / mismatch; retry
-   failures once.
-6. **Stop before submit.** Do **NOT** tick the **PRIVACY** consent checkbox and do
+2. **Snapshot** and confirm those 8 fields populated.
+3. **Resolve every manual field by its accessibility label / name, NEVER by hardcoded
+   pixel coordinates.** Airtable markup is generated, and - critically - once the
+   Description textarea is filled the whole lower block shifts down (~50px), so any
+   coordinate captured from an earlier screenshot silently misses (the URL lands
+   nowhere, the checkbox stays empty). Use the browser MCP's find-by-label / ref
+   mechanism and act on the returned ref. Verified stable names on this form:
+   - Description textarea: **"AoA1 Description"** (label "Description of this Activity.")
+   - Link input: labelled **"Please provide a link to this material if possible."**
+   - Amplify checkbox: **"Can IBM Amplify this activity?"**
+   - How-many-more dropdown: combobox **"How many MORE Acts of Advocacy..."**
+4. **Type the manual fields:** Description (polished, <=250 words), Link (URL).
+5. **Amplify checkbox:** tick **only** if the user explicitly allowed amplification.
+6. **How many MORE Acts of Advocacy defaults to `1`, not Zero.** For a single-act
+   submission you MUST change it to **Zero** - otherwise the form keeps an empty 2nd act
+   open and it is the easiest field to forget. Set `1`/`2` only when actually filling a
+   2nd/3rd act.
+7. **Re-snapshot and verify:** report each field as set / not set / mismatch; retry
+   failures once. Prefer reading values back via the a11y tree over pixel-reading.
+8. **Stop before submit.** Do **NOT** tick the **PRIVACY** consent checkbox and do
    **NOT** click **Submit**. Leave the filled form open and hand control back.
+
+### If the browser MCP starts erroring mid-fill
+
+On CDP-based browser MCPs a form-filler or password-manager extension in the user's
+Chrome (Grammarly, Bitwarden, etc.) can grab the active context right after a `type`
+action, after which every CDP call fails with `Cannot access a chrome-extension:// URL
+of different extension`. Recovery that works:
+
+- **Re-navigate to the prefilled URL** to reset the page and the CDP attachment, then
+  continue (identity + Act + Product + Date re-land automatically; re-type Description
+  and Link). Suggest the user pause form-filler extensions for the tab if it recurs.
+- If only screenshots are blocked, a **native OS screenshot** (computer-use MCP, with the
+  browser granted at read tier) is a valid read-only fallback to verify field state.
+- Targeting by label / ref (step 3) also sidesteps the stale-coordinate problem entirely.
 
 ### Hard rules for automation
 
