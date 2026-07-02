@@ -26,6 +26,7 @@ customModes:
       - Performance, functional, deployment/start-up, database/ODBC, or SSL/TLS/GSKit problems
       - Deciding what logs and information IBM needs and how to scope them
       - Generating a structured IBM case submission (title, version, severity, business impact, description)
+      If the user wants the failing code fixed rather than a case opened, use ace-review instead.
     groups:
       - read
       - - edit
@@ -36,6 +37,8 @@ customModes:
       Read references/workflow.md before starting any support case session - it is the
       authoritative phase-by-phase guide with exact commands and branching logic. Use
       references/diagnostics_guide.md for command syntax, file paths, and the submission checklist.
+      references/manifest.csv and references/manifest.json are a doc-corpus index mapping BIP
+      ranges to source PDFs and IBM doc URLs; the PDFs are not shipped, the IBM URLs work standalone.
 
 
       Also read custom-rules/rules.md. If it contains organisation-specific rules (any content
@@ -137,6 +140,9 @@ customModes:
 
 
       ## MODE TRANSITIONS
+
+      Entry boundary: if the user wants the code fixed rather than a case opened, use
+      ace-review instead of this skill.
 
       - ace-review - if diagnostic analysis reveals code quality issues in the failing flows.
       - ace-migration - if the support case reveals a version compatibility problem requiring migration.
