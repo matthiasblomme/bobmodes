@@ -63,3 +63,8 @@ bobmodes/
     ├── ace-support-case/     # the mode (.bobmodes + SKILL.md + references + custom-rules)
     └── ibm-champion-report/  # Bob mode only (.bobmodes + .env.sample + references; no SKILL.md)
 ```
+
+## Support
+
+If these modes save you time, you can support their upkeep via
+[GitHub Sponsors](https://github.com/sponsors/matthiasblomme).
