@@ -6,3 +6,9 @@ bobmodes/*/references/documentation/
 
 # Private per-mode identity files (e.g. ibm-champion-report/.env); never commit (.env.sample is kept)
 bobmodes/*/.env
+
+# Local ACE support-case diagnostic bundle; never publish
+ACE_SupportCase_ACE13_20250722
+
+# Editor / IDE local config
+.vscode/
