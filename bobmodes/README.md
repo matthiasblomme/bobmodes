@@ -62,7 +62,6 @@ When a custom rule conflicts with a default step, the custom rule wins - the mod
 ace-support-case/
 ├── .bobmodes                # Bob mode definition (slug: ace-support-case)
 ├── SKILL.md                 # Claude Code entry point (workflow + rules)
-├── ace_support_case.md      # original working notes
 ├── custom-rules/
 │   └── rules.md             # drop organisation-specific rules here (empty by default)
 └── references/
@@ -126,12 +125,11 @@ ALTERNATE_EMAIL=...
 ```
 ibm-champion-report/
 ├── .bobmodes                # Bob mode definition (slug: ibm-champion-report)
-├── .env.sample              # copy to .env and fill once (private; gitignored)
+├── SKILL.md                 # Claude Code entry point (workflow + rules)
+├── .env.sample              # copy to .env and fill once (.env itself is gitignored)
 └── references/
     └── form_fields.md       # verified field spec + prefill map + full option lists
 ```
-
-This mode ships as a **Bob mode only** here - there is no `SKILL.md` in this repo.
 
 ---
 

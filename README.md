@@ -1,6 +1,6 @@
 # bobmodes
 
-Custom **Bob modes** for IBM App Connect Enterprise (ACE) work. Most modes also ship as a Claude Code skill (`SKILL.md`), but Bob is the primary target.
+Custom **Bob modes** for IBM App Connect Enterprise (ACE) work. Both modes also ship as a Claude Code skill (`SKILL.md`), but Bob is the primary target.
 
 A Bob mode is a persona with its own instructions, tools, and triggers. These ones bake in the ACE workflows I would otherwise run from memory and a pile of bookmarked doc pages.
 
@@ -9,7 +9,7 @@ A Bob mode is a persona with its own instructions, tools, and triggers. These on
 - **ACE Support Case** (`ace-support-case`) - walks you through collecting a complete diagnostic bundle for an IBM ACE support case, then writes a ready-to-paste IBM case submission. [Details](bobmodes/README.md).
 - **IBM Champion Report** (`ibm-champion-report`) - assembles an IBM Champion act-of-advocacy submission for the Activity Report form: pulls your identity from a private `.env`, drafts the description, and produces a proven prefilled-form URL plus a copy-paste sheet (never auto-submits). [Details](bobmodes/README.md).
 
-You can tailor a mode to your organisation by adding rules to its `custom-rules/rules.md` - see the [per-mode docs](bobmodes/README.md).
+You can tailor the ACE Support Case mode to your organisation by adding rules to its `custom-rules/rules.md` - see the [per-mode docs](bobmodes/README.md).
 
 ## Prerequisites
 
@@ -29,21 +29,31 @@ cd bobmodes
 .\scripts\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\YourProject"
 ```
 
-Reload your VS Code window (`Ctrl + Shift + P` -> `Reload Window`) and the mode appears as **ACE Support Case** in Bob's mode selector, with a `/ace-support-case` slash command.
+To refresh modes you already imported, add `-Replace` - without it, existing slugs are left untouched:
+
+```powershell
+.\scripts\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\YourProject" -Replace
+```
+
+Reload your VS Code window (`Ctrl + Shift + P` -> `Reload Window`) and both modes appear in Bob's mode selector - **ACE Support Case** and **IBM Champion Report** - with `/ace-support-case` and `/ibm-champion-report` slash commands.
 
 ### As a Claude Code skill (optional)
 
-The same modes ship as Claude Code skills. Skills are discovered from `~/.claude/skills/`, so copy the mode folder there:
+Both modes ship as Claude Code skills. Skills are discovered from `~/.claude/skills/`, so copy the mode folder there:
 
 ```powershell
 # Windows / PowerShell
 Copy-Item -Recurse -Force .\bobmodes\ace-support-case "$HOME\.claude\skills\ace-support-case"
+Copy-Item -Recurse -Force .\bobmodes\ibm-champion-report "$HOME\.claude\skills\ibm-champion-report"
 ```
 
 ```bash
 # macOS / Linux
 cp -r ./bobmodes/ace-support-case ~/.claude/skills/ace-support-case
+cp -r ./bobmodes/ibm-champion-report ~/.claude/skills/ibm-champion-report
 ```
+
+IBM Champion Report reads your identity from a private `.env` in its folder. Copy `.env.sample` to `.env` in the installed skill and fill it in once - the file is gitignored and never leaves your machine.
 
 Start a new Claude Code session afterwards so the skill is picked up.
 
@@ -61,5 +71,5 @@ bobmodes/
 └── bobmodes/
     ├── README.md             # per-mode documentation
     ├── ace-support-case/     # the mode (.bobmodes + SKILL.md + references + custom-rules)
-    └── ibm-champion-report/  # Bob mode only (.bobmodes + .env.sample + references; no SKILL.md)
+    └── ibm-champion-report/  # the mode (.bobmodes + SKILL.md + .env.sample + references)
 ```
