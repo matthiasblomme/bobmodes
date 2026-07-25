@@ -74,7 +74,7 @@ INPUTS:      <what it works on / where the material appears>
 CONSTRAINTS: <hard rules; do X not Y; length; tone; forbidden actions>
 OUTPUT:      <exact shape of the answer>
 SUCCESS:     <how "done well" is checked>
-EXAMPLES:    <0-3, if format or judgement is non-obvious>
+EXAMPLES:    <none, or 3-5 diverse ones covering edge cases, if format/judgement is non-obvious>
 APPROACH:    <optional suggested steps, if the path is non-obvious and the model wants them>
 ```
 

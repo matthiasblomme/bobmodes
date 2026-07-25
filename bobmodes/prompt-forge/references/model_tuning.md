@@ -81,7 +81,11 @@ emphasise, and how heavily, is what the per-model profiles below adjust.
 5. **Constraints** - hard rules, things to avoid, scope boundaries ("do X, not Y").
 6. **Output format** - the exact shape of the answer.
 7. **Success criteria** - how the model (and the user) know it is done well.
-8. **Examples** (optional) - one to three, when the format or judgement is non-obvious.
+8. **Examples** (optional) - when the format or judgement is non-obvious. If examples earn
+   their place, **3-5 diverse ones that cover the edge cases** beat a lone example: they stop
+   the model latching onto an unintended pattern. Mirror the real use case and fence each one.
+   The exception is pure tone or voice calibration on a frontier model, where a single strong
+   exemplar is the point, not five.
 9. **Approach** (optional) - a suggested order of operations, when the path is not obvious
    and the model is one that benefits from being handed the steps.
 
@@ -136,6 +140,37 @@ below the stated bar, so measured recall falls. In the produced prompt, prefer:
 This is model-agnostic - it applies whenever the deliverable is a set of findings, on any
 target.
 
+### Design and frontend prompts: force variety
+
+When the prompt generates UI, a page, or any visual design, current models default to a
+generic "AI slop" look - overused fonts, cliche palettes, cookie-cutter layout. Three levers:
+
+- **Ask for options first.** Have the prompt tell the model to propose about four distinct
+  directions (each as background hex / accent hex / typeface, one line of rationale) and let
+  the user pick before it builds. This is the sanctioned way to get real variety now that a
+  temperature setting is not a lever on the current family.
+- **Or hand it a concrete spec.** If the direction is known, specify it precisely (palette,
+  radius, type treatment, section order); the model follows an explicit spec closely, and
+  that overrides its default house style.
+- **Add a short anti-slop line, not a wall.** No default system fonts (Inter, Roboto, Arial),
+  no cliche purple-gradient-on-white, no template layout. Current Opus needs far less of this
+  than older models, so keep it to a line or two rather than a long block.
+
+### Have the prompt check its own work
+
+For any prompt whose output has a checkable answer (code, math, structured extraction, a
+strict format), add a closing self-check to the produced prompt: "before you finish, verify
+the output against [the tests / the format rules / the success criteria]." It catches errors
+cheaply, especially on coding and math. For long autonomous runs the stronger version is a
+fresh-context verifier rather than self-review - see the guardrail snippets below.
+
+### Match the prompt's register to the output
+
+The model mirrors the shape of the prompt it is given. If you want terse prose back, write a
+terse prompt; heavy markdown and bullet lists in the prompt pull markdown and bullets into
+the answer. Write the prompt in the register you want to read, and strip formatting you do
+not want echoed.
+
 ---
 
 ## Per-model profiles
@@ -165,6 +200,13 @@ Thinking is always on.
   info", "delegate independent sub-tasks", etc.
 - **Anti-AI defaults are least needed here** - its prose already has the fewest tells - but
   a short voice/communication-style note lands well because it follows such notes closely.
+- **Do not ask it to show, echo, or explain its reasoning as response text.** On Fable 5
+  that can trip a `reasoning_extraction` refusal (and a fallback to Opus). If the user wants
+  the reasoning, tell them to read the structured thinking blocks, not to ask for it in the
+  answer. This one is Fable-specific - it is not a concern on Opus or Sonnet.
+- **For agentic or long-running Fable prompts, add the relevant guardrail snippets** (minimal
+  scope, act-when-you-have-enough, ground-progress-claims, re-grounding summary) from the
+  guardrail section below. Fable tidies and over-narrates less when told not to.
 - **Harness lever (only if they control the client):** effort default is **high**; use
   **xhigh** for the hardest reasoning and agentic work, and low/medium only for genuinely
   routine tasks (low/medium is still very capable on Fable, just not the baseline). Thinking
@@ -214,14 +256,50 @@ is where decomposition pays off most.
 
 - **Spell out the process.** Explicit numbered steps, in order. Do not assume it will plan
   a multi-step task well - hand it the plan.
-- **Few-shot is high value.** One to three concrete input/output examples do more here than
-  anywhere else on the axis.
+- **Few-shot is high value.** Three to five concrete, diverse input/output examples (covering
+  the edge cases) do more here than anywhere else on the axis.
 - **Tight, rigid output format.** Give an exact template and a short explicit "do not" list;
   it follows literally and benefits from rails.
 - **Name the edge cases** rather than trusting it to handle them.
 - **Keep each task small.** If the work is genuinely complex, the better move is often to
   split it into a chain of small Haiku prompts (or move up a tier), not to write one giant
   Haiku prompt. Say so in the "why" note.
+
+---
+
+## Behavioral guardrail snippets (agentic and long-run prompts)
+
+When the produced prompt drives an autonomous or long-running task on a frontier model
+(Fable 5, Opus 4.8), a few short guardrail lines measurably improve the run. Pull the ones
+that fit the task; do not paste all of them into every prompt. These are documented Fable
+behaviours that generalise to Opus; the reasoning-extraction one in the Fable profile is the
+only Fable-specific item.
+
+- **Minimal scope (anti-overengineering).** "Do what the task needs and stop. Do not add
+  features, refactor untouched code, or introduce abstractions that were not asked for."
+  Most useful at high or xhigh effort, where the model tidies unprompted.
+- **Act when you have enough (anti-overplanning).** "When you have enough to act, act. Give a
+  recommendation, not an exhaustive survey, and do not re-derive what is already settled."
+- **Report and stop (advisory tasks).** "The deliverable is your assessment. Report the
+  findings and stop; do not apply a fix until asked." Use whenever the task is diagnostic
+  rather than change-making.
+- **Ground progress claims.** "Before reporting progress, check each claim against a tool
+  result from this session. Only report work you can point to evidence for, and name what you
+  did not verify." For long runs where the model may narrate success it never confirmed.
+- **Verify with a fresh context, not self-critique.** For long or high-stakes runs, a
+  separate fresh-context verifier subagent outperforms asking the model to critique its own
+  output. (A plain self-check before finishing is still worth adding on shorter tasks - see
+  "Have the prompt check its own work" above.)
+- **Re-grounding final summary.** "Write the final message as a re-grounding for a reader who
+  saw none of the work: the outcome first, plain language, no working shorthand."
+- **Do not force a progress cadence.** Drop "after every N tool calls, summarize" scaffolding
+  - Opus 4.8 and Sonnet 5 self-calibrate their update frequency, and the counter now hurts
+  more than it helps. If the updates are wrong for the use case, describe the update style you
+  want and give one example instead of forcing a cadence.
+
+These shape an agent's behaviour, so they belong in the prompt only when the user will run it
+in an agentic client. For a one-shot chat paste, most do not apply - surface them the way you
+surface the other harness levers.
 
 ---
 
@@ -277,7 +355,7 @@ routing guidance.
 |---|---|---|---|---|
 | Steer... | the process | structure + gaps | the outcome | the outcome |
 | Decompose into steps | yes, explicit | some | only if non-obvious | rarely; give latitude |
-| Few-shot examples | 1-3, high value | 1 if ambiguous | 1 to anchor format | for tone, not structure |
+| Few-shot examples | 3-5 diverse, high value | 1-3 if ambiguous | 1 to anchor format | for tone, not structure |
 | Output format | rigid template | defined | stated, not micro-managed | stated, not micro-managed |
 | Effort (harness lever) | keep tasks small; effort N/A | high default, xhigh hardest | high/xhigh baseline | high default, xhigh hardest; low/med routine |
 | Tool/search triggers | spell out each call | spell out if agentic | "use X when Y" | "use X when Y" |
