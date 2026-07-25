@@ -116,6 +116,12 @@ customModes:
         one long conversation). These are Bob settings, not prompt wording.
       - After the prompt(s), add two or three lines on WHY it is shaped this way for
         Bob, so the user learns the pattern.
+      - FINAL HYGIENE SCAN: before handing the prompt back, scan the whole produced
+        block for em dashes and en dashes (U+2014, U+2013) and replace each with a
+        hyphen, comma, or sentence break. They slip in most as table separators,
+        "[label] - value" lines, and worked examples - check those first. Shipping a
+        prompt that contains one is a hard failure, doubly so if that prompt itself
+        tells the model to avoid them.
 
       ### 4.3 Output location
       Default is chat only (the prompt is the deliverable). Write it to a file only

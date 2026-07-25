@@ -2,9 +2,9 @@
 name: prompt-forge
 description: "Use this skill when the user wants to turn a rough idea, brain dump, or half-formed request into a clean, ready-to-paste prompt for a Claude model. Triggers on requests like 'write me a prompt for X', 'turn this into a prompt', 'make a magic prompt', 'help me prompt Claude to do X', 'clean up this prompt', 'optimise this prompt for Opus/Fable/Haiku', 'ask me questions until this prompt is clear', or when the user shares a messy task description and wants it shaped into a prompt rather than executed. Produces a finished prompt tuned to a target model, not the task's output. To bottle a prompt the user reuses into a skill, hand off to skill-creator."
 metadata:
-  version: 1.1.0
+  version: 1.4.0
   status: stable
-  last_updated: 2026-07-22
+  last_updated: 2026-07-25
 ---
 
 # Prompt Forge
@@ -62,11 +62,15 @@ any capable model. Tune with the generic end of the guidance and skip the Claude
 
 Find the ambiguities that would make the model guess, and resolve them - but **run the gate
 before drafting a single question**. If the material already contains goal, inputs, and
-output shape, asking anything is a rule violation, not a judgement call: pick sensible
-defaults for the rest (field semantics, edge-case behaviour, format details), state them as
-assumptions, and produce the prompt. A default the user corrects in the iterate round costs
-nothing; a question round always costs them a turn. Only ask about gaps that genuinely
-change the prompt and cannot be defaulted.
+output shape, do not ask about cosmetics (field semantics, edge-case behaviour, format,
+style): default them, state the assumption, produce the prompt. A cosmetic default the user
+corrects in the iterate round costs nothing; a question round always costs them a turn.
+
+Two things are **not** cosmetic and must never be silently defaulted: **success criteria**
+(what "done well" means - ask if undefined and un-inferable, otherwise bake it in as a
+checkable line) and **scope forks** (which inputs / diff-vs-whole, bare-minimum-vs-above-and-
+beyond, advisory-vs-blocking-gate - these change the prompt structurally, so name your reading
+or ask, never guess invisibly). See the gating rules in `references/clarify_and_polish.md`.
 
 Ask in **one batched round**, not a drip of one-at-a-time questions. Pull the questions
 from the dimension bank in `references/clarify_and_polish.md` (goal, audience, scope,
@@ -97,8 +101,8 @@ the axis:
   these models under-reach for them by default.
 - **Sonnet 5** - the balanced middle. Clear structure, one example if the format is
   ambiguous, trust it to fill reasonable gaps.
-- **Haiku 4.5** - spell it out. Explicit numbered steps, one to three concrete examples,
-  a tight output format, and named edge cases. This is the tier that most rewards
+- **Haiku 4.5** - spell it out. Explicit numbered steps, three to five concrete and diverse
+  examples, a tight output format, and named edge cases. This is the tier that most rewards
   decomposition.
 - **IBM Bob** - a surface, not a model: Bob's router picks the model per task and the
   user cannot choose. Follow the "Targeting IBM Bob" section in the reference - middle-of-
@@ -107,8 +111,27 @@ the axis:
 
 Deliver the prompt as **a single copyable block the user can paste in as one message**, with
 its sections delimited (XML-style tags are the Claude-idiomatic choice) and a clearly-marked
-slot for any input they will supply. Follow it with two or three lines on **why it is shaped
-this way for this model** so the user learns the pattern, not just the artefact.
+slot for any input they will supply. Keep that input slot trailing for short material; when
+the input is long (a full document, file, or transcript), place it **above** the instructions
+and add an extract-the-relevant-passages-first step - a long context is attended to better
+when the data leads. See the input-placement note in `references/model_tuning.md`. Follow the
+prompt with two or three lines on **why it is shaped this way for this model** so the user
+learns the pattern, not just the artefact.
+
+**Before you hand the prompt back, scan the whole produced block for em dashes and en dashes
+(U+2014, U+2013) and replace each with a hyphen, comma, or sentence break.** The rule in
+Output Hygiene applies to the prompt you generate, not just to your prose around it, and it
+is a hard failure to ship a prompt that contains one. They slip in most often as the
+separator in table cells, in a "label then value" line, and in worked examples - check
+those first. A prompt that itself tells the model to avoid em dashes must not contain any.
+
+**Then apply the golden rule to the prompt you just wrote:** would a colleague with minimal
+context be able to follow it and produce what the user wants? If a section would confuse
+them, it will confuse the model - tighten it before you hand it over. For a prompt whose
+output has a checkable answer (code, math, extraction, a strict format), also bake a
+self-check into the prompt itself - a closing "before you finish, verify the output against
+[the criteria]" line catches errors cheaply. See `references/model_tuning.md` for the
+self-check, the design-variety levers, and the guardrail snippets for agentic prompts.
 
 Keep the wording of the prompt separate from **harness settings** (model, effort, extended
 thinking, a system-vs-user split, structured-output schemas). Those are not part of a pasted
