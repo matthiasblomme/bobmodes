@@ -15,34 +15,48 @@ Rephrase them to the user's material - do not read the bank aloud.
 |---|---|
 | **Goal** | What is the single outcome? What does the user do with the result? What would make this a failure? |
 | **Audience** | Who reads the output - the user, an end user, a machine? What do they already know? |
-| **Scope** | What is explicitly in, and what is out? How big is one run (one item, a batch, an ongoing job)? |
+| **Scope** | What is in, and what is out? Which inputs exactly - all of X, or only what changed (the diff)? How big is one run (one item, a batch, an ongoing job)? Bare-minimum output, or go above and beyond? Advisory report, or a blocking gate? |
 | **Inputs** | What material does the model get? What form is it in? Is it pasted, referenced, or fetched? Can it be missing or malformed? |
 | **Output format** | Prose, list, table, JSON, code, a file? How long? Any fixed template or schema? |
 | **Constraints** | Hard rules, tone, things to avoid, length caps, forbidden actions? |
 | **Success criteria** | How does the model know it did well? Is there a checkable property ("valid JSON", "under 200 words", "cites a source per claim")? |
 | **Edge cases** | Empty input, ambiguous input, conflicting instructions, out-of-scope requests - what should happen? |
 
-Aim for **three sharp questions**, not ten generic ones. The dimensions most often left
-vague in a brain dump are output format, success criteria, and edge cases - start there.
+Aim for **three sharp questions**, not ten generic ones. Format and edge cases are usually
+defaultable; **success criteria and scope forks are the ones that must be surfaced** (asked
+or named as an explicit assumption), never silently guessed - see the gating rules below.
 
-### Gating rules (when NOT to ask)
+### Gating rules (when NOT to ask, and what you must never bury)
 
 **Run the gate before opening the question bank, not after.** The bank is a menu of what
-*could* be unclear; the gate decides whether you are allowed to ask at all.
+*could* be unclear; the gate decides whether you are allowed to ask at all. It has two
+failure modes, not one: **over-asking** (interrogating when you could default) and
+**silently defaulting a fork that changes what the prompt does**. The gate stops both.
 
-- **Hard gate:** if the material already contains goal, inputs, and output shape, asking is
-  a rule violation, not a judgement call - even when good questions exist. Field semantics,
-  edge-case behaviour, and format details are defaultable, never askable, once those three
-  are present: pick the sensible default, state it as a named assumption, produce the
-  prompt. The user corrects a wrong default in the iterate round for free; a question round
-  always costs them a turn.
-- The user has explicitly said "just make something reasonable" or is clearly in a hurry:
-  same treatment, default and state.
-- Below the hard gate, still prefer defaults: reserve questions for real forks where the
-  wrong guess produces a structurally different prompt and wastes the user's time.
+- **Hard gate on cosmetics:** if the material contains goal, inputs, and output shape, do
+  not ask about field semantics, edge-case behaviour, format, severity labels, or style -
+  those are defaultable. Pick the sensible default, state it as a named assumption, produce
+  the prompt. The user corrects a wrong cosmetic default in the iterate round for free; a
+  question round always costs a turn.
+- **Two things are NOT cosmetic - surface them, never default them invisibly:**
+  - **Success criteria.** "What good looks like" is what the whole prompt is judged
+    against, not a format detail. If it is genuinely undefined and you cannot infer it with
+    confidence, that is a real fork worth one question. If you can infer it, bake it into
+    the prompt as an explicit, checkable success line ("valid JSON", "under 200 words",
+    "cites a source per claim") - not a silent guess.
+  - **Scope forks.** These change the prompt structurally, so a wrong silent guess wastes a
+    whole run: *which inputs* (the whole tree vs the PR diff; the service vs the changed
+    files), *ambition level* (bare-minimum vs go-above-and-beyond - one modifier swings the
+    output enormously and the model cannot guess it), and *gate vs advisory* (a blocking
+    verdict vs a findings report). When the request hints at one - "before we merge a PR"
+    points at the diff, "audit" hints gate - name your reading as a stated assumption, or
+    ask if you cannot infer it. Never let it default invisibly.
+- The user said "just make something reasonable" or is clearly in a hurry: default and
+  state, but still name any scope or success assumption you made.
 
-Never ask a question whose answer you could infer from the material with reasonable
-confidence. Asking to offload your own thinking is the failure mode this gate exists to stop.
+Never ask a question whose answer you could infer with reasonable confidence - but for
+scope and success, "inferred" means *stated*, not silent. Over-asking offloads your own
+thinking; silently defaulting a structural fork ships the wrong prompt. Avoid both.
 
 ---
 
