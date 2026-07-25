@@ -2,9 +2,9 @@
 name: prompt-forge
 description: "Use this skill when the user wants to turn a rough idea, brain dump, or half-formed request into a clean, ready-to-paste prompt for a Claude model. Triggers on requests like 'write me a prompt for X', 'turn this into a prompt', 'make a magic prompt', 'help me prompt Claude to do X', 'clean up this prompt', 'optimise this prompt for Opus/Fable/Haiku', 'ask me questions until this prompt is clear', or when the user shares a messy task description and wants it shaped into a prompt rather than executed. Produces a finished prompt tuned to a target model, not the task's output. To bottle a prompt the user reuses into a skill, hand off to skill-creator."
 metadata:
-  version: 1.2.0
+  version: 1.3.0
   status: stable
-  last_updated: 2026-07-24
+  last_updated: 2026-07-25
 ---
 
 # Prompt Forge
@@ -111,8 +111,12 @@ the axis:
 
 Deliver the prompt as **a single copyable block the user can paste in as one message**, with
 its sections delimited (XML-style tags are the Claude-idiomatic choice) and a clearly-marked
-slot for any input they will supply. Follow it with two or three lines on **why it is shaped
-this way for this model** so the user learns the pattern, not just the artefact.
+slot for any input they will supply. Keep that input slot trailing for short material; when
+the input is long (a full document, file, or transcript), place it **above** the instructions
+and add an extract-the-relevant-passages-first step - a long context is attended to better
+when the data leads. See the input-placement note in `references/model_tuning.md`. Follow the
+prompt with two or three lines on **why it is shaped this way for this model** so the user
+learns the pattern, not just the artefact.
 
 **Before you hand the prompt back, scan the whole produced block for em dashes and en dashes
 (U+2014, U+2013) and replace each with a hyphen, comma, or sentence break.** The rule in

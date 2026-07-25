@@ -109,22 +109,35 @@ it does not do the writing itself.
 Adds constraints that strip the generic-LLM tells from the eventual output. Include the
 items that fit the task; do not paste the whole list into every prompt.
 
-Common tells to instruct the model to avoid:
+**Frame it as what to do, not only what to avoid.** A positive instruction the model can act
+on ("compose in flowing prose") steers more reliably than the matching prohibition ("don't
+use bullet lists"): a bare "avoid:" list tells the model what to suppress without telling it
+what to produce instead, so it self-monitors rather than writing well. Lead with the positive
+form wherever one exists; keep the negative only for tells that have no natural positive.
 
-- Preamble and throat-clearing ("Certainly!", "Great question", "In this response I will").
-- Empty summary paragraphs that restate what was just said.
-- Hedging stacks ("it's worth noting that", "generally speaking", "in many cases").
-- Rule-of-three padding and forced parallelism.
-- Over-signposting ("Firstly... Secondly... In conclusion").
-- Fake enthusiasm and exclamation marks.
-- Emoji, unless asked for.
-- Em dashes and en dashes (this skill's own hygiene rule; instruct the target model to use
-  hyphens, commas, or separate sentences).
-- Corporate filler and consultant-speak ("leverage", "utilise", "seamless", "robust").
+Reframe the common tells as positive instructions:
 
-Calibrate by tier: Fable needs the least of this (its default prose is cleanest), lower
-tiers need more of it made explicit. State the constraints as a short "avoid:" list near
-the end of the prompt so they are the last thing the model reads before answering.
+- **Open on the substance** - the first sentence answers the question or starts the task (no
+  "Certainly!", "Great question", "In this response I will").
+- **Stop when the content stops** - no closing paragraph that restates what was just said.
+- **State claims plainly** - where confidence is genuinely low, say so once and specifically,
+  instead of a hedge stack ("it's worth noting", "generally speaking", "in many cases").
+- **Vary rhythm to the content** - do not pad everything into groups of three or forced
+  parallel structure.
+- **Let the structure carry the order** - drop the "Firstly... Secondly... In conclusion"
+  signposting.
+- **Keep an even, factual register** - no manufactured enthusiasm, no exclamation marks.
+- **Use plain, specific words** - "use" not "leverage", "lets you" not "seamless" or
+  "robust"; concrete nouns over consultant-speak.
+
+A few tells only have a "do not" form - keep those negative and explicit: **no emoji unless
+asked**, and **no em dashes or en dashes** (this skill's own hygiene rule; instruct the target
+model to use hyphens, commas, or separate sentences).
+
+Calibrate by tier: Fable needs the least of this (its default prose is cleanest), lower tiers
+need more of it made explicit. Place the positive style directions up front with the rest of
+the constraints, and keep the short "no emoji / no em dashes" reminders near the end so they
+are the last thing the model reads before answering.
 
 ---
 
