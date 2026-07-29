@@ -133,6 +133,52 @@ ibm-champion-report/
 
 ---
 
+## Prompt Forge (`prompt-forge`)
+
+Prompt Forge turns a rough idea or brain dump into a clean, model-tuned prompt you can paste into a fresh Claude session. Its deliverable is **the prompt, not the task's output** - if you want the work done, just ask for the work.
+
+### What it does
+
+It runs a five-stage spine - capture, clarify, structure, tune, iterate - that pins down the five things a model cannot guess: goal, context, inputs, output shape, and success criteria. Clarification is gated and batched, so it asks one short round of questions that would actually change the prompt rather than interrogating you.
+
+The tuning stage is the differentiator. The same task spec becomes a different prompt depending on which model will run it, because **capability and steering trade off**: a capable model wants the outcome specified and latitude on the how, while a smaller one wants the steps, the format, and the examples spelled out. Getting that backwards is the most common prompting mistake - step-by-step babysitting makes a frontier model worse, and a trust-the-model one-liner makes a small one flail. One parameterised stage covers the whole roster rather than a separate mode per model.
+
+Optional passes run only when the material calls for them: a voice pass (baking a concrete "write in this voice" instruction into the prompt), an anti-AI de-slop pass, a next-chat handoff document, and bottling a prompt you reuse into a skill.
+
+### How to use it
+
+Describe what you want a prompt for, in whatever shape it is currently in. The mode triggers when you:
+
+- ask for a prompt ("write me a prompt for X", "turn this into a prompt"),
+- want an existing prompt cleaned up or tuned for a specific model,
+- ask to be questioned until the prompt is clear, or
+- paste a messy task description and want it shaped rather than executed.
+
+Example prompts:
+
+```
+Write me a prompt that reviews our release notes for missing breaking-change callouts.
+
+I have a half-formed idea for a prompt - ask me questions until it's clear.
+
+Clean this prompt up and tune it for Haiku.
+```
+
+It asks which model the prompt is for. If you do not know, say so and it picks a sensible default and tells you what it assumed.
+
+### Mode layout
+
+```
+prompt-forge/
+├── .bobmodes                    # Bob mode definition (slug: prompt-forge)
+├── SKILL.md                     # Claude Code entry point (the five-stage spine)
+└── references/
+    ├── model_tuning.md          # per-model steering profiles, roster, prompt anatomy
+    └── clarify_and_polish.md    # clarify question bank, task-spec template, voice + de-slop passes
+```
+
+---
+
 ## Disclaimers
 
 - **Review and validate everything the modes produce.** They use AI assistance and can make mistakes, misread requirements, or miss edge cases. You remain responsible for testing and for compliance with your organisation's standards.
