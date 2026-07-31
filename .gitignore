@@ -4,8 +4,12 @@ bobmodes/*/references/documentation/
 # Per-project Bob output created when importing modes into a target project
 .bob/
 
-# Private per-mode identity files (e.g. ibm-champion-report/.env); never commit (.env.sample is kept)
+# Private per-mode identity and estate files (ibm-champion-report/.env, cve-analysis/.env);
+# never commit (.env.sample is kept)
 bobmodes/*/.env
+
+# CVE decision log when it falls back to the skill folder; local record, never publish
+bobmodes/*/log/
 
 # Local ACE support-case diagnostic bundle; never publish
 ACE_SupportCase_ACE13_20250722
