@@ -9,8 +9,9 @@ A Bob mode is a persona with its own instructions, tools, and triggers. These on
 - **ACE Support Case** (`ace-support-case`) - walks you through collecting a complete diagnostic bundle for an IBM ACE support case, then writes a ready-to-paste IBM case submission. [Details](bobmodes/README.md).
 - **IBM Champion Report** (`ibm-champion-report`) - assembles an IBM Champion act-of-advocacy submission for the Activity Report form: pulls your identity from a private `.env`, drafts the description, and produces a proven prefilled-form URL plus a copy-paste sheet (never auto-submits). [Details](bobmodes/README.md).
 - **Prompt Forge** (`prompt-forge`) - turns a rough idea or brain dump into a clean prompt tuned for a specific target model (Fable 5 / Opus 4.8 / Sonnet 5 / Haiku 4.5). Its deliverable is the prompt, not the task's output. [Details](bobmodes/README.md).
+- **CVE Analysis** (`cve-analysis`) - practical exploitability assessment of CVEs and IBM security bulletins for ACE and MQ. Answers the question the advisory never does: affected is an inventory fact, but is it actually reachable in *this* environment, and how urgent is the patch? [Details](bobmodes/README.md).
 
-You can tailor the ACE Support Case mode to your organisation by adding rules to its `custom-rules/rules.md` - see the [per-mode docs](bobmodes/README.md).
+You can tailor the ACE Support Case and CVE Analysis modes to your organisation by adding rules to their `custom-rules/rules.md` - see the [per-mode docs](bobmodes/README.md).
 
 **Naming rule:** a mode's folder name, its `SKILL.md` `name:`, its `.bobmodes` `slug:` and the name you invoke it by are all the same string. Claude Code takes the invocable identifier from the folder name under `~/.claude/skills/`, so a folder that disagrees with its frontmatter means typing one name while the docs describe another.
 
@@ -38,7 +39,7 @@ To refresh modes you already imported, add `-Replace` - without it, existing slu
 .\scripts\Import-BobModes.ps1 -SourcePath ".\bobmodes" -TargetProjectPath "D:\Projects\YourProject" -Replace
 ```
 
-Reload your VS Code window (`Ctrl + Shift + P` -> `Reload Window`) and the modes appear in Bob's mode selector, with `/ace-support-case`, `/ibm-champion-report` and `/prompt-forge` slash commands.
+Reload your VS Code window (`Ctrl + Shift + P` -> `Reload Window`) and the modes appear in Bob's mode selector, with `/ace-support-case`, `/ibm-champion-report`, `/prompt-forge` and `/cve-analysis` slash commands.
 
 ### As a Claude Code skill (optional)
 
@@ -59,11 +60,12 @@ If you would rather copy, or you are on macOS / Linux:
 cp -r ./bobmodes/ace-support-case    ~/.claude/skills/ace-support-case
 cp -r ./bobmodes/ibm-champion-report ~/.claude/skills/ibm-champion-report
 cp -r ./bobmodes/prompt-forge        ~/.claude/skills/prompt-forge
+cp -r ./bobmodes/cve-analysis        ~/.claude/skills/cve-analysis
 ```
 
 The destination folder name must match the mode's `name:` - that is the name you invoke it by.
 
-IBM Champion Report reads your identity from a private `.env` in its folder. Copy `.env.sample` to `.env` in the installed skill and fill it in once - the file is gitignored and never leaves your machine. If you installed with `Install-Skills.ps1`, edit it in the repo folder; the junction means it is the same file.
+IBM Champion Report reads your identity from a private `.env` in its folder, and CVE Analysis reads your estate baseline (ACE/MQ versions, install method, HA topology) from one of its own. Copy `.env.sample` to `.env` in the installed skill and fill it in once - the file is gitignored and never leaves your machine. If you installed with `Install-Skills.ps1`, edit it in the repo folder; the junction means it is the same file.
 
 Start a new Claude Code session afterwards so the skill is picked up.
 

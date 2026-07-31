@@ -179,6 +179,82 @@ prompt-forge/
 
 ---
 
+## CVE Analysis (`cve-analysis`)
+
+The CVE Analysis mode turns the assistant into a **senior IBM middleware security architect** for IBM App Connect Enterprise and IBM MQ, plus everything they bundle (IBM Semeru/Java, XML stacks, Jakarta Mail, embedded Node.js, Liberty in mqweb, GSKit).
+
+The point is not to summarise the advisory. IBM marks a product affected whenever it bundles a vulnerable component, which is an inventory statement rather than a risk statement. This mode answers the question the bulletin never does: is the vulnerable code path actually reachable in *this* environment, and what does that mean for patch urgency?
+
+### What it does
+
+1. **Intake and scope** - checks its decision log first, so a CVE assessed three months ago is answered from the record instead of researched again. Reads an estate baseline from `.env` so it does not re-ask your versions and topology every time.
+2. **Source research** - the IBM bulletin for affected versions and fix levels, the upstream advisory (Apache, Eclipse, OpenSSL, GHSA, Oracle CPU) for the technical detail IBM omits, NVD/MITRE for CWE and vector. A bulletin bundling five CVEs is treated as five assessments sharing one fix level, never as one assessment with five ids.
+3. **Component usage mapping** - locates the vulnerable component *inside* the products using `references/component-map.md`, a curated map with `[confirmed]`/`[verify]` flags and a "False trails" section for claims that sound right and are not (XMLNSC is ACE's native C++ parser, so Java XML CVEs do not travel through it).
+4. **Exposure and exploitability** - places the CVE in one of three classes (direct runtime exposure, indirect/conditional, runtime inheritance) and defends the placement. ACE and MQ are assessed separately; they share almost no architecture.
+5. **Estate check (optional)** - greps your actual ACE projects for the vulnerable node type, library, or listener, turning "conditionally exposed" into a hard yes or no.
+6. **Report** - a deep-dive per CVE or a triage table for a bulletin sweep, closed with a fixed-order in-chat digest (what it is, applicable, action, notes, related).
+
+Conceptual and defensive throughout: it never produces exploit instructions, payloads, or proof-of-concept code.
+
+### How to use it
+
+Describe the CVE or paste the bulletin. It triggers when you:
+
+- ask "are we affected by CVE-XXXX-NNNNN?",
+- paste a CVE id or IBM security bulletin text in an ACE/MQ context,
+- want a monthly PSIRT sweep triaged,
+- ask whether something is exploitable in your setup or how urgently it needs patching.
+
+Example prompts:
+
+```
+Are we affected by CVE-2025-12345? We run ACE 13.0.7.1 on-prem and MQ 9.4.0.21 on the same box.
+
+Triage this month's IBM ACE bulletins for me.
+
+Is this Liberty CVE exploitable if we never enabled mqweb?
+```
+
+For collecting diagnostics or opening an IBM case, use `ace-support-case` instead.
+
+### The decision log
+
+The mode keeps a persistent log of every assessment: the verdict, the reasoning, and above all which fixes were **deliberately not applied** and why. Each entry carries a mandatory "revisit when" trigger, the concrete condition that invalidates the decision ("if Designer flows are ever deployed", "when we expose mqweb", "next LTS upgrade").
+
+That log is what makes next quarter's triage cheap. A CVE that resurfaces in the next scanner report is answered from the record rather than researched from scratch, and the same digest comes out whether the assessments ran in one session or across months.
+
+Set a durable location in `custom-rules/rules.md` - a notes vault or wiki checkout that outlives the skill folder. Without one it falls back to `log/cve-decisions.md` inside the mode folder, which is gitignored and does not survive a re-clone.
+
+### One-time setup (`.env`)
+
+Copy `.env.sample` to `.env` and fill in your estate: exact ACE and MQ fix-pack levels, install method (on-prem vs Certified Containers, node-managed vs standalone), co-location, HA topology, and exposure-relevant notes. Many bulletins resolve on form factor alone, so this is what keeps intake short.
+
+The file is gitignored and never leaves your machine. Keep it current: stale versions here mean wrong verdicts, and the mode writes newly confirmed facts back to it as it learns them.
+
+### Custom rules (optional)
+
+`custom-rules/rules.md` ships empty. Add your organisation's policy and the mode applies it on top of its built-in workflow; a custom rule that conflicts with a default step wins. Useful things to put there: patch-urgency thresholds and who signs off, which endpoints sit behind a WAF or gateway, which scanner produces the findings you triage, reporting requirements your security team expects, and the decision-log location.
+
+Facts about the estate go in `.env`; policy about the estate goes here.
+
+### Mode layout
+
+```
+cve-analysis/
+├── .bobmodes                    # Bob mode definition (slug: cve-analysis)
+├── SKILL.md                     # Claude Code entry point (six-phase workflow)
+├── .env.sample                  # estate baseline template; copy to .env
+├── custom-rules/
+│   └── rules.md                 # your organisation's policy (empty by default)
+└── references/
+    ├── report-template.md       # deep-dive, triage table, and log-entry structures
+    └── component-map.md         # where bundled components live inside ACE and MQ
+```
+
+If a documentation or knowledge-base MCP is available, the mode uses it to ground component-usage claims in the product documentation and to recall prior assessments. Without one it falls back to web research and the bundled component map.
+
+---
+
 ## Disclaimers
 
 - **Review and validate everything the modes produce.** They use AI assistance and can make mistakes, misread requirements, or miss edge cases. You remain responsible for testing and for compliance with your organisation's standards.
