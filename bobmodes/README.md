@@ -255,6 +255,63 @@ If a documentation or knowledge-base MCP is available, the mode uses it to groun
 
 ---
 
+## TechXchange Planner (`techxchange-planner`)
+
+The TechXchange Planner builds a **personalized IBM conference agenda** end-to-end: it scrapes the event data (session catalog through the RainFocus API, agenda/experience and FAQ pages), discovers your interest profile, and produces a slot-budgeted day-by-day schedule with ranked alternates. It is re-runnable by design: when the session timetable publishes, a refresh run diffs the catalog and clash-checks your picks against the real times. It works for any IBM event with a `reg.tools.ibm.com` session catalog, not just TechXchange.
+
+Claude Code skill only - there is no `.bobmodes` mode definition; the workflow leans on scripting and (optionally) browser tooling rather than a Bob persona.
+
+### What it does
+
+1. **Scrape** - bundled Python scripts pull the full session catalog and filter attributes through the RainFocus JSON API (no login; public widget tokens with TechXchange 2026 defaults, overridable per event/year - discovery steps in `references/rainfocus-api.md`), convert the FAQ and other accordion pages to markdown, and generate a browsable catalog note plus per-product focus notes with abstracts and speakers. Test/dummy catalog entries are filtered out.
+2. **Profile** - mines local AI-chat history for product mentions using the catalog's own filter vocabulary as the term list (so it stays current each year), falls back to asking who you are and what you work with, then to short multiple-choice rounds for genuine forks.
+3. **Plan** - clusters the catalog around the profile, budgets slots from real session lengths (lab 90 / breakout 45 / tech talk 20 min), and writes the personalized agenda: day tables, track tallies, ranked alternates with swap reasons, and a to-do whose first item is the refresh instruction.
+
+Long steps report playful but truthful status lines ("Sweet-talking the RainFocus API… 400/822 sessions so far") - the numbers are always real, and errors drop the humor.
+
+### How to use it
+
+Once installed, describe your conference-planning need. The skill triggers when you:
+
+- want the TechXchange (or another IBM event) agenda or session catalog scraped,
+- ask "which sessions should I attend?" or want a personal conference schedule,
+- want your existing plan re-checked because session times were published.
+
+Example prompts:
+
+```
+Scrape the TechXchange agenda and session catalog for me.
+
+I'm going to TechXchange - I work with ACE and MQ daily. Build me a personalized agenda.
+
+The session times are out. Update my TechXchange plan and check for clashes.
+```
+
+### The champion-schedule file
+
+`assets/champion-schedule.md` ships as a **placeholder**. IBM Champions receive the real schedule file separately (champions-only - it is never published with the skill); drop it over the placeholder or next to your conference notes and the planner treats its per-day entries as fixed anchors that outrank regular sessions, without asking. While the `PLACEHOLDER` marker is present the file is ignored and champions are simply asked for their commitments instead.
+
+### Mode layout
+
+```
+techxchange-planner/
+├── SKILL.md                     # Claude Code entry point (scrape → profile → plan, refresh mode)
+├── scripts/
+│   ├── fetch_catalog.py          # RainFocus API: full catalog + attributes → JSON
+│   ├── parse_faq.py              # any IBM accordion page → markdown note
+│   ├── build_catalog_notes.py    # catalog note + per-product focus notes
+│   └── mine_history.py           # chat-history interest mining (catalog vocabulary)
+├── references/
+│   ├── rainfocus-api.md          # API endpoints, token discovery, pagination quirks
+│   └── note-templates.md         # output note structures + slot-budget rules
+└── assets/
+    └── champion-schedule.md      # placeholder; champions get the real file separately
+```
+
+Requires Python 3 (stdlib-only scripts, except the FAQ parser which needs `beautifulsoup4`) and network access to `ibm.com` / `events.tools.ibm.com` / `reg.tools.ibm.com`.
+
+---
+
 ## Disclaimers
 
 - **Review and validate everything the modes produce.** They use AI assistance and can make mistakes, misread requirements, or miss edge cases. You remain responsible for testing and for compliance with your organisation's standards.

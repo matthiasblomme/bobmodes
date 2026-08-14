@@ -10,6 +10,7 @@ A Bob mode is a persona with its own instructions, tools, and triggers. These on
 - **IBM Champion Report** (`ibm-champion-report`) - assembles an IBM Champion act-of-advocacy submission for the Activity Report form: pulls your identity from a private `.env`, drafts the description, and produces a proven prefilled-form URL plus a copy-paste sheet (never auto-submits). [Details](bobmodes/README.md).
 - **Prompt Forge** (`prompt-forge`) - turns a rough idea or brain dump into a clean prompt tuned for a specific target model (Fable 5 / Opus 4.8 / Sonnet 5 / Haiku 4.5). Its deliverable is the prompt, not the task's output. [Details](bobmodes/README.md).
 - **CVE Analysis** (`cve-analysis`) - practical exploitability assessment of CVEs and IBM security bulletins for ACE and MQ. Answers the question the advisory never does: affected is an inventory fact, but is it actually reachable in *this* environment, and how urgent is the patch? [Details](bobmodes/README.md).
+- **TechXchange Planner** (`techxchange-planner`) - scrapes an IBM event's session catalog (RainFocus API), agenda and FAQ pages, profiles your interests from chat history or guided questions, and builds a slot-budgeted personal conference agenda with ranked alternates; re-run it when session times publish and it clash-checks your picks. Claude Code skill only - no Bob mode. [Details](bobmodes/README.md).
 
 You can tailor the ACE Support Case and CVE Analysis modes to your organisation by adding rules to their `custom-rules/rules.md` - see the [per-mode docs](bobmodes/README.md).
 
@@ -57,10 +58,11 @@ It creates a junction per skill, so a `git pull` updates the installed skills wi
 If you would rather copy, or you are on macOS / Linux:
 
 ```bash
-cp -r ./bobmodes/ace-support-case    ~/.claude/skills/ace-support-case
-cp -r ./bobmodes/ibm-champion-report ~/.claude/skills/ibm-champion-report
-cp -r ./bobmodes/prompt-forge        ~/.claude/skills/prompt-forge
-cp -r ./bobmodes/cve-analysis        ~/.claude/skills/cve-analysis
+cp -r ./bobmodes/ace-support-case      ~/.claude/skills/ace-support-case
+cp -r ./bobmodes/ibm-champion-report   ~/.claude/skills/ibm-champion-report
+cp -r ./bobmodes/prompt-forge          ~/.claude/skills/prompt-forge
+cp -r ./bobmodes/cve-analysis          ~/.claude/skills/cve-analysis
+cp -r ./bobmodes/techxchange-planner   ~/.claude/skills/techxchange-planner
 ```
 
 The destination folder name must match the mode's `name:` - that is the name you invoke it by.
@@ -85,7 +87,9 @@ bobmodes/
     ├── README.md             # per-mode documentation
     ├── ace-support-case/     # the mode (.bobmodes + SKILL.md + references + custom-rules)
     ├── ibm-champion-report/  # the mode (.bobmodes + SKILL.md + .env.sample + references)
-    └── prompt-forge/         # the mode (.bobmodes + SKILL.md + references)
+    ├── prompt-forge/         # the mode (.bobmodes + SKILL.md + references)
+    ├── cve-analysis/         # the mode (.bobmodes + SKILL.md + references + custom-rules)
+    └── techxchange-planner/  # skill only (SKILL.md + scripts + references + assets)
 ```
 
 ## Support
