@@ -81,10 +81,10 @@ The IBM Champion Report mode helps you report an IBM Champion (or Rising Champio
 1. **Load identity** - reads your stable identity (Champion Program ID, name, emails) from a private, gitignored `.env` (copy `.env.sample` once).
 2. **Gather the activity** - one act at a time: what you did, the Act-of-Advocacy type, the product(s), a link (effectively mandatory), the date, and whether IBM may amplify it.
 3. **Write the description** - drafts each "Description of this Activity" for a reviewer who has not seen the work, factual and within 250 words, and reports the word count.
-4. **Confirm the dropdowns** - the Act-of-Advocacy (40) and Product(s) (516) option lists are verified verbatim from the live form; the mode picks the exact entry and confirms it with you.
+4. **Confirm the dropdowns** - the Act-of-Advocacy (40) and Product(s) (1097, re-scraped 2026-09-15) option lists are verified verbatim from the live form; the mode picks the exact entry and confirms it with you.
 5. **Produce the output** - a prefilled URL that lands 8 fields (identity, Act of Advocacy, Product(s), Date) via verified field-ID / name params, plus a copy-paste sheet for the fields that cannot be prefilled (Description, Link, Amplify, How-many-more, PRIVACY). If a browser MCP is available it can fill the form in place and verify, but never submits.
 
-The authoritative field spec - the field-ID prefill map, date format, word limits, and the full verified option lists - lives in `references/form_fields.md`.
+The authoritative field spec - the field-ID prefill map, date format, word limits, and the full verified option lists - lives in `references/form_fields.md`. Filling the form in place needs a browser MCP server: Playwright MCP is preferred, browsermcp is the fallback - install and wiring in `ibm-champion-report/dependency.md`.
 
 ### How to use it
 

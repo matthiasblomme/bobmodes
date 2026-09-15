@@ -144,6 +144,12 @@ customModes:
       - Open URL, Snapshot (accessibility tree), Click, Type, Select option, Press key.
       Prefer a browser MCP that drives the user's REAL logged-in Chrome (e.g. the
       browsermcp.io extension); a fresh profile may hit a login wall on the IBM site.
+      Bob add-on - server preference: use Playwright MCP first (tool list carries
+      browser_evaluate, browser_fill_form, browser_wait_for) and follow the
+      "Bob / Playwright MCP add-on" section of references/form_fields.md; fall back
+      to browsermcp ("Bob / browsermcp add-on" section: snapshot binds the tab,
+      Amplify and How-many-more go by keyboard from the Link field) only when the
+      Playwright tools are absent. Install and wiring for both: dependency.md.
       IF no browser MCP is present, SKIP this phase and say so - the sheet and
       prefilled URL from Phase 5 already stand alone.
 

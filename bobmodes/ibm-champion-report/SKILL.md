@@ -174,6 +174,18 @@ is the most convenient path since the form is on a logged-in site. Follow the
 - **Do NOT tick the PRIVACY consent checkbox and do NOT click Submit.** Leave the
   filled form open and hand control back for the user to review, consent, and submit.
 
+**Bob add-on - which browser MCP:** prefer **Playwright MCP** (`@playwright/mcp`; its
+tool list carries `browser_evaluate`, `browser_fill_form` and `browser_wait_for`) and
+follow the **Bob / Playwright MCP add-on** section of
+[`references/form_fields.md`](references/form_fields.md): ref clicks reach every control
+on this form and `browser_evaluate` reads the field values back. Fall back to
+**browsermcp** only when the Playwright tools are not in the live tool list -
+browsermcp needs a `browser_snapshot` right after `browser_navigate` and before the
+first `browser_type` / `browser_press_key` (it binds the tab), and its `browser_click`
+cannot reach the Amplify checkbox or the How-many-more options - both go by keyboard
+from the Link field; exact key sequences in the **Bob / browsermcp add-on** section of
+the same file. Installing and wiring either server: [`dependency.md`](dependency.md).
+
 If **no** browser MCP is available, say so - the sheet + prefilled URL from step 5
 already stand alone.
 
