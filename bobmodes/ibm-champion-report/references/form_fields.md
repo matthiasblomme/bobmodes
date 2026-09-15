@@ -28,7 +28,8 @@ Airtable prefills via query params: `?prefill_<KEY>=<URLEncodedValue>`, joined w
   (`prefill_fldXXXXXXXXXXXXXX`).
 - Select values must match an option **exactly** (see Appendix A/B).
 - Multi-select: comma-separate values inside one param.
-- Email values: `@` -> `%40`. Date values: `D/M/YYYY` (leading zeros optional).
+- Email values: `@` -> `%40`. Date values: `yyyy-mm-dd` (the date fields render as
+  `yyyy-mm-dd` text inputs and only that format lands - `D/M/YYYY` leaves the field empty).
 - Some fields cannot be prefilled at all (no column-name match and no field ID is
   exposed on the public form). Those are **manual** - they go in the copy-paste sheet.
 
@@ -62,6 +63,9 @@ Load from the skill's `.env`; do not prompt for them.
 
 If `.env` is missing, fall back to the `.env.sample` shape and ask the user to copy it
 to `.env` and fill real values once (it is gitignored and stays private).
+
+`.env` also carries `ACTIVITY_LOG`, the path of the private activity log. It is not a
+form field and never lands on the form - see SKILL.md step 5C.
 
 ---
 
@@ -116,16 +120,25 @@ not listed, select **Other** and type the product name."
 
 ### 6. Approximate date of activity (date, required)
 
-- **Prefill:** `prefill_fld0aJmUIrBMO2BWh=<D/M/YYYY>` (field ID).
-- Format `D/M/YYYY` slash-separated; **leading zeros optional** (`22/5/2026` and
-  `22/05/2026` both land; display normalizes to `22/5/2026`).
+- **Prefill:** `prefill_fld0aJmUIrBMO2BWh=<yyyy-mm-dd>` (field ID). The field renders as
+  a `yyyy-mm-dd` text input and the prefill must use that exact format - `D/M/YYYY` leaves
+  the field empty while the other prefills land (verified in-browser 2026-09-02).
+- **Filling it manually is fiddly - two traps, both silent:**
+  1. `form_input` / setting `.value` writes the DOM but not React state: the field looks
+     right, then **clears the moment it loses focus**. Do not use form_input here.
+  2. Typing into it **appends** rather than replaces (produced `2026-08-052026-08-05`).
+     Triple-click to select the existing content first.
+  Reliable sequence: triple-click the field -> type `yyyy-mm-dd` -> then **click the day
+  cell in the open calendar** (gridcell named e.g. `Wed Aug 05 2026`) to commit. Re-read
+  the field after committing; `find` does not always report its value, so screenshot it.
 - "Only report activities contributed in the last year." First-of-month if unknown.
 
 ### 7. How many MORE Acts of Advocacy to add (single-select, required)
 
 - Options: **Zero**, **1**, **2**. **NOT prefillable** (defaults to `1`); set manually.
 - The 2nd/3rd-act fields are manual too, except the **2nd-activity Date**
-  (`prefill_fldsYCztbwXKtlxiT=<D/M/YYYY>`). If the user has more than 3 activities,
+  (`prefill_fldsYCztbwXKtlxiT=<yyyy-mm-dd>`, same input type as the 1st-activity
+  date). If the user has more than 3 activities,
   tell them to submit the form again for the overflow.
 
 ### 8. PRIVACY consent (checkbox, required)
@@ -137,16 +150,17 @@ not listed, select **Other** and type the product name."
 
 ## Prefilled-form URL (PROVEN)
 
-Regression-verified in-browser: all 8 prefillable fields land together. Build this from
+Verified in-browser (2026-09-02): all 8 prefillable fields land together. Build this from
 `.env` identity + the assembled 1st-act values. URL-encode values (`@`->`%40`,
 space->`%20`).
 
 ```
-https://airtable.com/appuwf3eOGdO6x1oS/pagF5IfVT7m6unCbG/form?prefill_fldt6UIOXVxQBNSgl=<CHAMPION_PROGRAM_ID>&prefill_First%20name=<FIRST_NAME>&prefill_Last%20name=<LAST_NAME>&prefill_Primary%20Email=<PRIMARY_EMAIL>&prefill_Alternate%20Email=<ALTERNATE_EMAIL>&prefill_1st%20Act%20of%20Advocacy=<ACT_OPTION>&prefill_fldTWgIi3n3KNErJJ=<PRODUCTS_COMMA_SEP>&prefill_fld0aJmUIrBMO2BWh=<D/M/YYYY>
+https://airtable.com/appuwf3eOGdO6x1oS/pagF5IfVT7m6unCbG/form?prefill_fldt6UIOXVxQBNSgl=<CHAMPION_PROGRAM_ID>&prefill_First%20name=<FIRST_NAME>&prefill_Last%20name=<LAST_NAME>&prefill_Primary%20Email=<PRIMARY_EMAIL>&prefill_Alternate%20Email=<ALTERNATE_EMAIL>&prefill_1st%20Act%20of%20Advocacy=<ACT_OPTION>&prefill_fldTWgIi3n3KNErJJ=<PRODUCTS_COMMA_SEP>&prefill_fld0aJmUIrBMO2BWh=<yyyy-mm-dd>
 ```
 
 **Prefills (8):** Champion Program ID, First name, Last name, Primary Email, Alternate
-Email, 1st Act of Advocacy, Product(s), 1st-activity Date.
+Email, 1st Act of Advocacy, Product(s), 1st-activity Date (`yyyy-mm-dd` - see the
+date-field note above).
 
 **Always manual after the URL opens (cannot be prefilled):** Description, Link, Can IBM
 Amplify, How-many-more, PRIVACY consent, and all 2nd/3rd-act fields except their date.
@@ -195,7 +209,11 @@ in (or switch to an extension-based MCP), then resume.
    coordinate captured from an earlier screenshot silently misses (the URL lands
    nowhere, the checkbox stays empty). Use the browser MCP's find-by-label / ref
    mechanism and act on the returned ref. Verified stable names on this form:
-   - Description textarea: **"AoA1 Description"** (label "Description of this Activity.")
+   - Description textarea: accessible name **"A1_DESCRIPTION"** (label "Description of this
+     Activity."). Verified 2026-08-05; it was "AoA1 Description" at the 2026-06-29 calibration,
+     so match on the label text, not the name. It is a **contenteditable DIV, not a textarea** -
+     `form_input` fails with `Element type "DIV" is not a supported form input`; click it and
+     type instead.
    - Link input: labelled **"Please provide a link to this material if possible."**
    - Amplify checkbox: **"Can IBM Amplify this activity?"**
    - How-many-more dropdown: combobox **"How many MORE Acts of Advocacy..."**
