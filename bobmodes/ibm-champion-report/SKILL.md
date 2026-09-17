@@ -47,6 +47,14 @@ activity log live in this skill's `.env` file. It is gitignored and private.
    vault, a file on a mapped or synced drive, any path this machine can write. If the
    key is missing or empty, ask the user where the log should live, append
    `ACTIVITY_LOG=<path>` to `.env`, and continue. Do not ask again on later runs.
+4. `IBM_COMMUNITY_PROFILE_URL` and `ACE_COMMUNITY_BLOG_URL` are the user's IBM
+   Community profile page and the ACE community blog listing. When navigating to
+   the user's community profile or blog list (e.g. to retrieve a latest post for
+   reporting), use these values directly; do not ask the user for the URL.
+   **Navigation note:** `IBM_COMMUNITY_PROFILE_URL` redirects to an IBMid login
+   wall even though the content is public, so do not use it for browser navigation.
+   Use `ACE_COMMUNITY_BLOG_URL` instead, type the value of `LAST_NAME` from `.env`
+   into the blog search box, then sort by date to find the latest post.
 
 ---
 
