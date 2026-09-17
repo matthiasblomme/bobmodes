@@ -245,6 +245,8 @@ reading it. A draft is discarded unseen; that is the accepted trade-off.
    Necessary" (Playwright selector `button:has-text("Reject All")`; skip if absent).
 3. Click **Clear form** (`[role=button]:has-text("Clear form")`, bottom of the page next
    to Submit), then **Confirm** in the "Clear form?" dialog (`button:has-text("Confirm")`).
+   If no dialog appears, click Clear form again - right after a navigate the renderer can
+   still be busy and the first click is lost (seen in Claude-in-Chrome, 2026-09-17).
 4. Navigate to the **prefilled** URL; wait for the text "Champion Program ID".
 
 Clearing has to precede the prefilled navigation because Clear form wipes prefilled
@@ -315,13 +317,16 @@ checkbox, combobox by click + type + submit).
      const cb=[...document.querySelectorAll("[role=combobox]")].map(c=>c.innerText.trim());
      const chk=[...document.querySelectorAll("[role=checkbox]")].map(c=>c.getAttribute("aria-checked"));
      const d=l=>document.querySelector("[role=textbox][aria-label="+l+"]")?.innerText||"";
-     return { championId: tb[0], act1: cb[0], desc1: d("A1_DESCRIPTION"), links: tb.filter(v=>v.startsWith("http")),
+     const links=[...document.querySelectorAll("input[type=text]:not([placeholder=yyyy-mm-dd])")].slice(1).map(e=>e.value);
+     return { championId: tb[0], act1: cb[0], desc1: d("A1_DESCRIPTION"), links,
        amplify: chk, howMany: cb[2], act2: cb[3], desc2: d("A2_DESCRIPTION"),
        dates: [...document.querySelectorAll("input[placeholder=yyyy-mm-dd]")].map(e=>e.value),
        chips: [...document.querySelectorAll("[aria-label*=Remove]")].length }; }
    ```
 
-   Mismatches get one fix pass (re-issue only the failed calls) and one more evaluate;
+   Compare by position (`links[0]` is act 1, `links[1]` act 2) so a value that landed in
+   the wrong field reads as two mismatches, never as a pass. Mismatches get one fix pass
+   (re-issue only the failed calls) and one more evaluate;
    then stop. Report one status line per field group; print the sheet only if the fill
    was skipped or a mismatch remains.
 5. **Stop before submit** - same rule as step 8 above.
@@ -331,7 +336,7 @@ Selector table (DOM order; observed 2026-09-15/17):
 | Control | Selector |
 |---|---|
 | Description act 1 / act 2 | `[role=textbox][aria-label=A1_DESCRIPTION]` / `...A2_DESCRIPTION` |
-| Link act 1 / act 2 | `input[type=text]:not([placeholder]) >> nth=1` / `nth=2` (nth=0 is the Champion ID) |
+| Link act 1 / act 2 | `input[type=text]:not([placeholder="yyyy-mm-dd"]) >> nth=1` / `nth=2` (nth=0 is the Champion ID; a plain `:not([placeholder])` drops it because that input carries an empty placeholder attribute, shifting the positions) |
 | Amplify act 1 / act 2, PRIVACY | `[role=checkbox] >> nth=0` / `nth=1` / `nth=2` (PRIVACY is never touched) |
 | Act 1, Products 1, How-many-more, Act 2, Products 2 | `[role=combobox] >> nth=0` .. `nth=4` |
 | Date act 1 / act 2 | `input[placeholder="yyyy-mm-dd"] >> nth=0` / `nth=1` (prefilled; manual only if the URL lacked it) |
