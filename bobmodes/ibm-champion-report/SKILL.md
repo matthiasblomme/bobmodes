@@ -26,10 +26,13 @@ the prefilled URL plus the copy-paste sheet that make that click take ten second
 - **Short URL:** https://www.ibm.biz/champ-report
 
 **Before assembling anything**, read [`references/form_fields.md`](references/form_fields.md) -
-it is the authoritative field spec: which values come from `.env`, the verified
-dropdown option lists (Appendix A/B), date format, word limits, and the proven
-prefilled-URL mechanism (which fields prefill by field ID, which by name, and which
-are manual-only).
+it is the authoritative field spec: which values come from `.env`, date format, word
+limits, and the proven prefilled-URL mechanism (which fields prefill by field ID,
+which by name, and which are manual-only). The verified dropdown option lists live
+next to it: [`references/act_options.md`](references/act_options.md) (grep it; read
+it whole only when a grep misses) and
+[`references/product_options.md`](references/product_options.md) (grep only - 1097
+lines, never read in full).
 
 ---
 
@@ -62,7 +65,8 @@ activity log live in this skill's `.env` file. It is gitignored and private.
 
 ### 1. Load the field spec and identity
 
-- Read [`references/form_fields.md`](references/form_fields.md).
+- Read [`references/form_fields.md`](references/form_fields.md) - the spec only; the
+  option lists are separate files looked up by grep in steps 2 and 4.
 - Read `.env`. Confirm the identity block silently (do not echo full emails unless
   the user asks); if a required key is missing, ask the user to fill `.env`.
 - Resolve `ACTIVITY_LOG` (ask and write it back if missing, see above). If the file
@@ -76,17 +80,25 @@ Each submission carries 1 to 3 acts of advocacy. For each act, collect:
 
 - **What they did** - enough to write a description and pick the activity type.
 - **Act of Advocacy type** - map their description to the closest entry in the
-  verified Appendix A list, then confirm it is the activity they mean.
-- **Product(s) involved** - map to the verified Appendix B product list; anything not
+  verified list in `references/act_options.md`, then confirm it is the activity they mean.
+- **Product(s) involved** - grep `references/product_options.md` for the exact name
+  (keyword grep on a miss, show the candidates); anything not
   listed goes in via the form's **Other -> type the name** option.
 - **Link** - push hard for one. "Lack of link may result in disqualification."
 - **Date** - last 12 months; format `yyyy-mm-dd`; first-of-month if unknown.
 - **Can IBM amplify?** - ask, do not assume.
 
-Before drafting anything, compare the activity against the entries in the activity
-log. If an entry already covers the same artifact (same post, talk, repo, video), say
-so, quote the entry's date and type, and ask whether to continue - the point of the log
-is that nothing gets reported twice.
+Before drafting anything, check the activity against the log, link first:
+
+1. Normalise the new link (lower-case scheme and host, drop a trailing slash and any
+   `utm_*`, `trk` or `ref` query parameters) and compare it the same way with every
+   `Link:` line in the log. A match is a certain duplicate: say so, quote that entry's
+   date and type, and ask whether to continue.
+2. No link match: compare the description against the entries as prose (same post,
+   talk, repo, video) and raise a likely duplicate the same way. Entries written
+   before 2026-09-17 carry no `Link:` line and can only match this way.
+
+The point of the log is that nothing gets reported twice.
 
 If the user has more than 3 activities, tell them to submit the form again for the
 overflow and set "How many MORE" accordingly (Zero / 1 / 2) for this run. **Warning:
@@ -105,12 +117,12 @@ For each act, draft the "Description of this Activity":
 
 ### 4. Confirm the dropdown choices
 
-The option lists in Appendix A/B of the field spec are verified verbatim from the live
-form, so they are authoritative. Your job is to pick the right entry: present the exact
+The option lists in `references/act_options.md` and `references/product_options.md`
+are verified verbatim from the live form, so they are authoritative. Your job is to pick the right entry: present the exact
 option you chose for each single-select / multi-select field and confirm it is the
 activity/product the user means (e.g. "Blog or Article" vs "Blog on IBM property").
-If the live form ever changes and an option no longer matches, update
-[`references/form_fields.md`](references/form_fields.md).
+If the live form ever changes and an option no longer matches, regenerate the option
+file with the re-scrape recipe in its header.
 
 ### 5. Produce the output
 
@@ -149,58 +161,53 @@ the 2nd act's type, product(s), description, link and amplify stay manual.
 **C. Activity log entry** - append one entry per act to the file at `ACTIVITY_LOG`.
 Create the file with a `# IBM Champion activity log` title line if it does not exist.
 The entry carries the activity date (yyyy-mm-dd, the same value as on the form), the
-confirmed Act of Advocacy type, and the description exactly as it goes on the form -
-nothing else:
+confirmed Act of Advocacy type, the link exactly as typed on the form, and the
+description exactly as it goes on the form - nothing else:
 
 ```
 ## <yyyy-mm-dd activity date> - <Act of Advocacy type>
+Link: <url as on the form>
 
 <description as submitted, <=250 words>
 ```
 
-Keep a blank line between entries. Do not write the link, the products, the amplify
-answer, the identity block, or the prefilled URL - the log exists
-so the user can see what has been reported, not to mirror the form. If the file cannot
+Two links (slides and a recording) are two `Link:` lines; no link at all is a `Link:`
+line left empty. Keep a blank line between entries. Do not write the products, the
+amplify answer, the identity block, or the prefilled URL - the log exists so the user
+can see what has been reported and so step 2 can match on the link, not to mirror
+the form. If the file cannot
 be written (path unreachable, permission denied), print the entry block and say so,
 so the user can paste it themselves.
 
 ### 6. Offer to fill the form in the browser (if a browser MCP is available)
 
-Check the live tool list for a browser-automation MCP (Browser MCP, Playwright MCP,
-Chrome DevTools MCP, etc.). If one is present, offer to fill the form directly - it
-is the most convenient path since the form is on a logged-in site. Follow the
-**Browser automation** section of [`references/form_fields.md`](references/form_fields.md):
+Check the live tool list for a browser-automation MCP. Playwright MCP
+(`browser_navigate`, `browser_snapshot`, `browser_fill_form`, `browser_evaluate`, ...) is
+the primary server; browsermcp is the fallback; Claude's own surfaces map the same
+steps. Installing and wiring: [`dependency.md`](dependency.md). If one is present, offer
+to fill the form directly and follow the **Browser automation** section of
+[`references/form_fields.md`](references/form_fields.md) - the **Normal workflow** by
+default, the **Lean workflow** when lean mode is on:
 
-- **Prefilled-URL-first:** navigate to the PROVEN prefilled URL built in step 5B, not
-  the bare form URL - identity + Act + Product(s) + Date land automatically. Snapshot
-  and confirm those 8 fields populated.
-- **Stale-draft check:** if that snapshot shows text in Description or Link, or an
-  empty Date, Airtable restored an unsent draft from this browser profile. Show the
-  user what it holds, then with their go-ahead click **Clear form** at the bottom of
-  the page, confirm the dialog, and navigate to the prefilled URL again before typing
-  anything (procedure in the field spec, "Autosaved drafts override the prefill").
-- Match fields by their visible label text, not brittle selectors.
+- **Always clear first:** open the bare form URL, click **Clear form**, confirm the
+  dialog, then navigate to the PROVEN prefilled URL built in step 5B - identity + Act +
+  Product(s) + Date land automatically (8 fields, 9 with a 2nd act). Airtable restores
+  unsent drafts from the browser profile on top of the prefill; clearing first is what
+  keeps them out.
+- Match fields by their accessibility label / ref, or a selector on that label - never
+  by screen coordinates.
 - Automation only types the manual fields: Description and Link, plus the Amplify
   checkbox if the user explicitly allowed amplification. Handle a product not in the
   list via **Other -> type the name**.
 - **"How many MORE Acts of Advocacy" defaults to 1, not Zero** (options: Zero / 1 / 2).
-  For a single-act submission it MUST be explicitly set to Zero.
-- **Fill + verify, never submit:** after filling, re-snapshot and report each field as
-  set / not set / mismatch; retry failures once.
+  For a single-act submission it MUST be explicitly set to Zero; leave it at 1 for two
+  acts; set 2 for three.
+- **Fill + verify, never submit.** Normal workflow: snapshot after the prefill,
+  re-snapshot after each select, read every field back at the end, one screenshot for
+  the user, report each field as set / not set / mismatch, retry failures once. Lean
+  workflow: one read at the end, one fix pass.
 - **Do NOT tick the PRIVACY consent checkbox and do NOT click Submit.** Leave the
   filled form open and hand control back for the user to review, consent, and submit.
-
-**Bob add-on - which browser MCP:** prefer **Playwright MCP** (`@playwright/mcp`; its
-tool list carries `browser_evaluate`, `browser_fill_form` and `browser_wait_for`) and
-follow the **Bob / Playwright MCP add-on** section of
-[`references/form_fields.md`](references/form_fields.md): ref clicks reach every control
-on this form and `browser_evaluate` reads the field values back. Fall back to
-**browsermcp** only when the Playwright tools are not in the live tool list -
-browsermcp needs a `browser_snapshot` right after `browser_navigate` and before the
-first `browser_type` / `browser_press_key` (it binds the tab), and its `browser_click`
-cannot reach the Amplify checkbox or the How-many-more options - both go by keyboard
-from the Link field; exact key sequences in the **Bob / browsermcp add-on** section of
-the same file. Installing and wiring either server: [`dependency.md`](dependency.md).
 
 If **no** browser MCP is available, say so - the sheet + prefilled URL from step 5
 already stand alone.
@@ -214,13 +221,33 @@ already stand alone.
 - The log entry from step 5C was written before the click. If the user decides not to
   submit after all, remove that entry so the log stays true.
 
+## Lean mode (`lean: on`)
+
+Off by default. Switched on by `lean: on` anywhere in the request, or by "lean",
+"economy", "save coins" / "save tokens". It trades checks for spend - fewer reads, fewer
+round trips - and never skips: identity from `.env`, the 250-word cap, the always-clear
+open sequence, the end check, the log append, stop before PRIVACY and Submit.
+
+| Step | Lean behaviour |
+|---|---|
+| 1 | `.env` and the field spec as usual; the activity log is grepped for the normalised link and the artifact's name instead of read in full |
+| 2-4 | option lookups by grep only; one consolidated confirmation message carrying the whole sheet and the mapped option values, skipped when the user named the exact option; proceed on a single "ok" |
+| 5 | sheet, URL and log entry as usual |
+| 6 | the **Lean workflow** in the field spec: open sequence, one `browser_fill_form`, comboboxes by click + type with submit, one `browser_evaluate` compared to the sheet, one fix pass; no snapshot, no screenshot |
+| 7 | URL plus one status line per field group; the sheet is repeated only if the browser fill was skipped or a mismatch remains |
+
+Lean needs `browser_evaluate` and selector targets (Playwright MCP or a Claude surface).
+On browsermcp say so in one line and run the normal workflow.
+
 ---
 
 ## Reference files
 
 | File | When to read |
 |---|---|
-| [`references/form_fields.md`](references/form_fields.md) | **Read before assembling anything** - full field spec, dropdown option lists, date format, word limits, prefilled-URL mechanism, and browser-automation procedure (tool-agnostic fill + verify, never submit) |
+| [`references/form_fields.md`](references/form_fields.md) | **Read before assembling anything** - field spec, date format, word limits, prefilled-URL mechanism, and the browser-automation procedures (fill + verify, never submit) |
+| [`references/act_options.md`](references/act_options.md) | The 40 Act of Advocacy entries, verbatim. Grep in step 2; read whole only on a miss. |
+| [`references/product_options.md`](references/product_options.md) | The 1097 Product entries, verbatim. Grep only, never read in full. |
 | [`.env`](.env) | Private identity values and the `ACTIVITY_LOG` path (gitignored). Read each run. |
 | [`.env.sample`](.env.sample) | Shape/placeholder for `.env` when the real file is missing |
 | the file at `ACTIVITY_LOG` | Private activity log, outside the skill folder. Read in step 1 for the duplicate check, appended in step 5C. |
@@ -229,5 +256,5 @@ already stand alone.
 
 - **Never use em dashes or en dashes** (Unicode U+2014 and U+2013) in any generated output. Use ASCII hyphens (`-`), commas, parentheses, or separate sentences instead.
 - **Never echo the user's real identity values into committed files or anywhere they would persist beyond the private `.env`.** The `.env.sample` must stay anonymized.
-- **The activity log carries only the activity date, the Act of Advocacy type, and the description.** No identity values, no link, no products, no prefilled URL, no other form fields.
+- **The activity log carries only the activity date, the Act of Advocacy type, the activity link, and the description.** No identity values, no products, no prefilled URL, no other form fields.
 - **Never add AI-tool signatures, watermarks, or attribution comments to generated files.** No `<!-- Made with Bob -->`, no `<!-- Generated by Claude -->`, no `# AI-assisted` footers, no co-authorship lines inside the body of any deliverable, no "Created with X" stamps. The user owns the output; AI tooling stays invisible. This applies to every file the skill produces.

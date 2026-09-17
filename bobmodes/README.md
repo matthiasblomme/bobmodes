@@ -84,7 +84,7 @@ The IBM Champion Report mode helps you report an IBM Champion (or Rising Champio
 4. **Confirm the dropdowns** - the Act-of-Advocacy (40) and Product(s) (1097, re-scraped 2026-09-15) option lists are verified verbatim from the live form; the mode picks the exact entry and confirms it with you.
 5. **Produce the output** - a prefilled URL that lands 8 fields (identity, Act of Advocacy, Product(s), Date) via verified field-ID / name params, plus a copy-paste sheet for the fields that cannot be prefilled (Description, Link, Amplify, How-many-more, PRIVACY). If a browser MCP is available it can fill the form in place and verify, but never submits.
 
-The authoritative field spec - the field-ID prefill map, date format, word limits, and the full verified option lists - lives in `references/form_fields.md`. Filling the form in place needs a browser MCP server: Playwright MCP is preferred, browsermcp is the fallback - install and wiring in `ibm-champion-report/dependency.md`.
+The authoritative field spec - the field-ID prefill map, date format, word limits - lives in `references/form_fields.md`; the verified option lists are `references/act_options.md` and `references/product_options.md`. Filling the form in place needs a browser MCP server: Playwright MCP is preferred, browsermcp is the fallback - install and wiring in `ibm-champion-report/dependency.md`. Add `lean: on` to the request for a fill with fewer checks and reads (one verification at the end).
 
 ### How to use it
 
@@ -124,11 +124,14 @@ ALTERNATE_EMAIL=...
 
 ```
 ibm-champion-report/
-├── .bobmodes                # Bob mode definition (slug: ibm-champion-report)
-├── SKILL.md                 # Claude Code entry point (workflow + rules)
-├── .env.sample              # copy to .env and fill once (.env itself is gitignored)
-└── references/
-    └── form_fields.md       # verified field spec + prefill map + full option lists
+|-- .bobmodes                # Bob mode definition (slug: ibm-champion-report)
+|-- SKILL.md                 # Claude Code entry point (workflow + rules, lean mode)
+|-- .env.sample              # copy to .env and fill once (.env itself is gitignored)
+|-- dependency.md            # browser MCP install and wiring (Playwright first, browsermcp fallback)
+`-- references/
+    |-- form_fields.md       # verified field spec + prefill map + browser workflows
+    |-- act_options.md       # the 40 Act of Advocacy entries, verbatim
+    `-- product_options.md   # the 1097 Product entries, verbatim (grep only)
 ```
 
 ---
