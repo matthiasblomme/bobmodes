@@ -171,6 +171,11 @@ is the most convenient path since the form is on a logged-in site. Follow the
 - **Prefilled-URL-first:** navigate to the PROVEN prefilled URL built in step 5B, not
   the bare form URL - identity + Act + Product(s) + Date land automatically. Snapshot
   and confirm those 8 fields populated.
+- **Stale-draft check:** if that snapshot shows text in Description or Link, or an
+  empty Date, Airtable restored an unsent draft from this browser profile. Show the
+  user what it holds, then with their go-ahead click **Clear form** at the bottom of
+  the page, confirm the dialog, and navigate to the prefilled URL again before typing
+  anything (procedure in the field spec, "Autosaved drafts override the prefill").
 - Match fields by their visible label text, not brittle selectors.
 - Automation only types the manual fields: Description and Link, plus the Amplify
   checkbox if the user explicitly allowed amplification. Handle a product not in the

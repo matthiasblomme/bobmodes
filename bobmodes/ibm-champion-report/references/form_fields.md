@@ -211,21 +211,37 @@ e.g. Claude-in-Chrome or browsermcp.io). The form sits behind `ibm.biz/champ-rep
 fresh logged-out profile may hit a login wall. If it does, stop and ask the user to log
 in (or switch to an extension-based MCP), then resume.
 
-**Autosaved drafts override the prefill (verified 2026-09-15 in the logged-in Chrome).**
-Airtable keeps an unsent draft of the manual fields per browser (`localStorage` key
-`AirtableLocalPersister.formPageElementSavedFormDataByElementId.<app>.<page>.<element>`,
-columns Description, Link and the 1st-activity Date) and applies it AFTER the URL
-prefill: a stale draft re-fills Description and Link and nulls the prefilled Date, so the
-snapshot shows 7 of 8 fields with the date empty. A fresh profile never has one. Before
-typing anything, read the draft back and show it to the user (it may be an unfiled
-activity); only with their go-ahead remove that key and re-navigate to the prefilled
-URL. Typing into the form overwrites the draft in place.
+**Autosaved drafts override the prefill (verified 2026-09-15 and 2026-09-17 in the
+logged-in Chrome).** Airtable keeps an unsent draft of the fields you typed into, per
+browser profile (`localStorage` key
+`AirtableLocalPersister.formPageElementSavedFormDataByElementId.<app>.<page>.<element>`)
+and applies it AFTER the URL prefill: a stale draft re-fills Description and Link and,
+if the date was touched in that draft, nulls the prefilled Date - the snapshot then
+shows 7 of 8 fields. Any persistent profile can carry one; only a fresh or isolated
+profile never does. The check and the fix, both without JavaScript:
+
+1. After the first snapshot, treat the form as **stale** if Description or Link already
+   hold text, the Date is empty although the URL carried it, or any 2nd/3rd-act field
+   is filled.
+2. Show the user what the draft holds (it may be an unfiled activity) and ask before
+   discarding it.
+3. With their go-ahead click **Clear form** (a `role=button` at the bottom of the page,
+   next to Submit), confirm the "Clear form? Any data you've filled out so far will be
+   removed" dialog with **Confirm**, then navigate to the prefilled URL **again** -
+   Clear form empties the stored draft and the prefill lands clean on the reload
+   (verified 2026-09-17: draft columns empty, Description and Link empty, 8 fields
+   landed).
+4. Re-snapshot and confirm the 8 fields before typing anything. Typing into the form
+   overwrites the draft in place, so never type over a draft you have not shown the user.
 
 ### Fill procedure (fill + verify, never submit)
 
 1. **Navigate** to the proven prefilled URL above (identity + Act + Product + Date land
    automatically).
-2. **Snapshot** and confirm those 8 fields populated.
+2. **Snapshot** and confirm those 8 fields populated. If Description or Link already
+   hold text, or the Date is empty, the browser restored an autosaved draft: follow
+   "Autosaved drafts override the prefill" above (Clear form, confirm, navigate again)
+   before going on.
 3. **Resolve every manual field by its accessibility label / name, NEVER by hardcoded
    pixel coordinates.** Airtable markup is generated, and - critically - once the
    Description textarea is filled the whole lower block shifts down (~50px), so any
@@ -283,10 +299,11 @@ Deltas to the generic procedure above:
   (not `browser_screenshot`), `browser_wait_for` (not `browser_wait`),
   `browser_console_messages` (not `browser_get_console_logs`). Do not copy an
   auto-approve list from one server to the other.
-- With `--browser chrome` the server drives the installed Chrome under its own profile,
-  not the logged-in one; the autosaved-draft note above does not apply there, but a
-  cookie banner does appear on the first load. With `--extension` (logged-in Chrome) the
-  draft note applies.
+- With `--browser chrome` the server drives the installed Chrome under its own
+  persistent profile, not the logged-in one: expect a cookie banner on the first load,
+  and the autosaved-draft check still applies (that profile keeps drafts from earlier
+  runs; only `--isolated` is immune). With `--extension` (logged-in Chrome) it applies
+  as well.
 
 ### Bob / browsermcp add-on (fallback; verified by Bob on browsermcp, 2026-09)
 

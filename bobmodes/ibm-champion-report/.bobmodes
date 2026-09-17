@@ -156,6 +156,11 @@ customModes:
       ### 6.2 Fill procedure (follow references/form_fields.md "Browser automation")
       - Navigate to the PROVEN prefilled URL you built in 5.2 (identity + Act + Product(s)
         + Date land automatically); snapshot and confirm those 8 fields populated.
+      - Stale-draft check: if Description or Link already hold text, or the Date is
+        empty, Airtable restored an unsent draft from this browser profile. Show the
+        user what it holds; with their go-ahead click "Clear form" at the bottom of the
+        page, confirm the dialog, and navigate to the prefilled URL again before typing
+        anything (references/form_fields.md, "Autosaved drafts override the prefill").
       - Match fields by visible LABEL text, not brittle selectors (Airtable markup is generated).
       - Type the manual fields: Description (<=250 words) and Link.
       - For a product not in the list, use "Other -> type the name".
