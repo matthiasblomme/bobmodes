@@ -34,7 +34,9 @@ customModes:
       ### 1.1 Read the field spec
       Read references/form_fields.md BEFORE assembling anything. It is authoritative for:
       - Which fields come from .env vs the user
-      - Verified dropdown option lists (Appendix A/B, scraped verbatim from the live form)
+      - Where the verified option lists live: references/act_options.md (grep; read
+        whole only on a miss) and references/product_options.md (grep only, never
+        read in full), both scraped verbatim from the live form
       - Date format (yyyy-mm-dd), the 250-word description cap, link requirement
       - The proven prefilled-form URL mechanism (field-ID vs name vs manual-only fields)
 
@@ -59,9 +61,11 @@ customModes:
       ### 2.1 Collect each act of advocacy (1 to 3 per submission)
       For each act:
       - What the user did (enough to write a description and pick the type)
-      - Act of Advocacy type - map to the closest Appendix A entry (exact option text),
+      - Act of Advocacy type - map to the closest references/act_options.md entry
+        (exact option text),
         then CONFIRM it is the activity the user means
-      - Product(s) involved - map to the Appendix B product list (exact option text);
+      - Product(s) involved - grep references/product_options.md for the exact name
+        (keyword grep on a miss, show the candidates);
         anything not listed goes via the form's "Other -> type the name" option
       - Link - push hard; "lack of link may result in disqualification"
       - Date - last 12 months; yyyy-mm-dd; first-of-month if unknown
@@ -91,7 +95,8 @@ customModes:
 
 
       ### 4.1 Confirm the chosen option
-      The Appendix A/B option lists are verified verbatim from the live form (authoritative).
+      The option lists in references/act_options.md and references/product_options.md
+      are verified verbatim from the live form (authoritative).
       For every single/multi-select field, present the EXACT option you chose and confirm it
       is the activity/product the user means (e.g. "Blog or Article" vs "Blog on IBM
       property"). IF the live form ever changes and an option no longer matches, UPDATE

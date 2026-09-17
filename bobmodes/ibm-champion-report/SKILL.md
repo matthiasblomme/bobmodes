@@ -26,10 +26,13 @@ the prefilled URL plus the copy-paste sheet that make that click take ten second
 - **Short URL:** https://www.ibm.biz/champ-report
 
 **Before assembling anything**, read [`references/form_fields.md`](references/form_fields.md) -
-it is the authoritative field spec: which values come from `.env`, the verified
-dropdown option lists (Appendix A/B), date format, word limits, and the proven
-prefilled-URL mechanism (which fields prefill by field ID, which by name, and which
-are manual-only).
+it is the authoritative field spec: which values come from `.env`, date format, word
+limits, and the proven prefilled-URL mechanism (which fields prefill by field ID,
+which by name, and which are manual-only). The verified dropdown option lists live
+next to it: [`references/act_options.md`](references/act_options.md) (grep it; read
+it whole only when a grep misses) and
+[`references/product_options.md`](references/product_options.md) (grep only - 1097
+lines, never read in full).
 
 ---
 
@@ -62,7 +65,8 @@ activity log live in this skill's `.env` file. It is gitignored and private.
 
 ### 1. Load the field spec and identity
 
-- Read [`references/form_fields.md`](references/form_fields.md).
+- Read [`references/form_fields.md`](references/form_fields.md) - the spec only; the
+  option lists are separate files looked up by grep in steps 2 and 4.
 - Read `.env`. Confirm the identity block silently (do not echo full emails unless
   the user asks); if a required key is missing, ask the user to fill `.env`.
 - Resolve `ACTIVITY_LOG` (ask and write it back if missing, see above). If the file
@@ -76,8 +80,9 @@ Each submission carries 1 to 3 acts of advocacy. For each act, collect:
 
 - **What they did** - enough to write a description and pick the activity type.
 - **Act of Advocacy type** - map their description to the closest entry in the
-  verified Appendix A list, then confirm it is the activity they mean.
-- **Product(s) involved** - map to the verified Appendix B product list; anything not
+  verified list in `references/act_options.md`, then confirm it is the activity they mean.
+- **Product(s) involved** - grep `references/product_options.md` for the exact name
+  (keyword grep on a miss, show the candidates); anything not
   listed goes in via the form's **Other -> type the name** option.
 - **Link** - push hard for one. "Lack of link may result in disqualification."
 - **Date** - last 12 months; format `yyyy-mm-dd`; first-of-month if unknown.
@@ -105,12 +110,12 @@ For each act, draft the "Description of this Activity":
 
 ### 4. Confirm the dropdown choices
 
-The option lists in Appendix A/B of the field spec are verified verbatim from the live
-form, so they are authoritative. Your job is to pick the right entry: present the exact
+The option lists in `references/act_options.md` and `references/product_options.md`
+are verified verbatim from the live form, so they are authoritative. Your job is to pick the right entry: present the exact
 option you chose for each single-select / multi-select field and confirm it is the
 activity/product the user means (e.g. "Blog or Article" vs "Blog on IBM property").
-If the live form ever changes and an option no longer matches, update
-[`references/form_fields.md`](references/form_fields.md).
+If the live form ever changes and an option no longer matches, regenerate the option
+file with the re-scrape recipe in its header.
 
 ### 5. Produce the output
 
@@ -220,7 +225,9 @@ already stand alone.
 
 | File | When to read |
 |---|---|
-| [`references/form_fields.md`](references/form_fields.md) | **Read before assembling anything** - full field spec, dropdown option lists, date format, word limits, prefilled-URL mechanism, and browser-automation procedure (tool-agnostic fill + verify, never submit) |
+| [`references/form_fields.md`](references/form_fields.md) | **Read before assembling anything** - field spec, date format, word limits, prefilled-URL mechanism, and the browser-automation procedures (fill + verify, never submit) |
+| [`references/act_options.md`](references/act_options.md) | The 40 Act of Advocacy entries, verbatim. Grep in step 2; read whole only on a miss. |
+| [`references/product_options.md`](references/product_options.md) | The 1097 Product entries, verbatim. Grep only, never read in full. |
 | [`.env`](.env) | Private identity values and the `ACTIVITY_LOG` path (gitignored). Read each run. |
 | [`.env.sample`](.env.sample) | Shape/placeholder for `.env` when the real file is missing |
 | the file at `ACTIVITY_LOG` | Private activity log, outside the skill folder. Read in step 1 for the duplicate check, appended in step 5C. |
