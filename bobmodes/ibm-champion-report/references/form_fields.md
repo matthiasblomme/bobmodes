@@ -143,6 +143,8 @@ not listed, select **Other** and type the product name."
 ### 7. How many MORE Acts of Advocacy to add (single-select, required)
 
 - Options: **Zero**, **1**, **2**. **NOT prefillable** (defaults to `1`); set manually.
+- One act: set `Zero`. Two acts: leave the default `1` untouched - the 2nd-act block is
+  already open (verified 2026-09-17). Three acts: set `2`.
 - **Bob / browsermcp add-on:** `browser_click` does not open the option list in the a11y
   snapshot. After typing the Link value the Link field is already focused - do NOT
   re-focus it with an empty `browser_type` (that clears the field). Press `Tab` three
@@ -174,6 +176,10 @@ https://airtable.com/appuwf3eOGdO6x1oS/pagF5IfVT7m6unCbG/form?prefill_fldt6UIOXV
 **Prefills (8):** Champion Program ID, First name, Last name, Primary Email, Alternate
 Email, 1st Act of Advocacy, Product(s), 1st-activity Date (`yyyy-mm-dd` - see the
 date-field note above).
+
+**Second act (9th param):** append `&prefill_fldsYCztbwXKtlxiT=<yyyy-mm-dd>` for the
+2nd-activity date; verified 2026-09-17 to land together with the other 8. No field ID
+is exposed for a 3rd-activity date, so that one stays manual.
 
 **Always manual after the URL opens (cannot be prefilled):** Description, Link, Can IBM
 Amplify, How-many-more, PRIVACY consent, and all 2nd/3rd-act fields except their date.
@@ -323,6 +329,40 @@ Every other rule above still applies - in particular step 3 (resolve by label / 
   each character of the option (`Z` `e` `r` `o`, or `1` / `2`) and `Enter`. No
   `browser_snapshot` between the Tab presses and `Enter` - it closes the dropdown.
 - **Step 7 (verify):** re-snapshot only after `Enter`; retry failures once.
+
+### Second act (verified 2026-09-17, two acts, Claude-in-Chrome)
+
+When the submission carries a 2nd act, the prefilled URL adds its date
+(`prefill_fldsYCztbwXKtlxiT=<yyyy-mm-dd>`, lands with the other 8) and "How many MORE"
+stays at its default `1`, so the 2nd-act block is open from the first snapshot - do not
+touch that field for two acts (set `2` for three). Fill the 1st act as above, then:
+
+- **Type:** the combobox under the "2nd Act of Advocacy." label (the 4th combobox on the
+  page, after 1st Act, 1st Product(s) and How-many-more). Click it, type the exact
+  Appendix A entry, confirm the filtered list shows that one entry, `Enter`.
+- **Product(s):** the empty multi-select combobox in the 2nd-act block. Click it, type the
+  exact Appendix B name, then check the option list: `Enter` takes the **top** match, and
+  typing `IBM MQ` lists `IBM MQ`, `IBM MQ (Developer)`, `IBM MQ on Cloud` in that order.
+  Repeat per product; a chip with a Remove button appears for each.
+- **Description:** textbox `A2_DESCRIPTION` (same contenteditable DIV as `A1_DESCRIPTION`,
+  same 250-word cap). **Link:** the second textbox labelled "Please provide a link to
+  this material if possible.". **Amplify:** the second "Can IBM Amplify this activity?"
+  checkbox. **Date:** already prefilled; the manual sequence in field 6 applies only if
+  the URL did not carry it.
+- Verify both acts from the DOM before stopping: 2 links, 2 description word counts,
+  checkbox states in order (Amplify 1, Amplify 2, PRIVACY), both `yyyy-mm-dd` inputs.
+
+A 3rd act works the same way with the third block, except that no field ID is exposed
+for its date - that one goes through the manual date sequence.
+
+### First click after navigate may only focus the window
+
+In the extension-driven Chrome a whole batch of clicks and typing right after
+`navigate` was acknowledged by the tool and reached nothing: the page had no focus
+(`document.hasFocus()` false) and the first click only brought the window to the front.
+After navigating, click the first target, read `document.activeElement` (or re-snapshot
+and look for the focused state) and only then type; if the control is not focused,
+click it again. Observed 2026-09-17.
 
 ### If the browser MCP starts erroring mid-fill
 

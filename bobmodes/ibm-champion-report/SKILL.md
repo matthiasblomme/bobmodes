@@ -91,7 +91,8 @@ is that nothing gets reported twice.
 If the user has more than 3 activities, tell them to submit the form again for the
 overflow and set "How many MORE" accordingly (Zero / 1 / 2) for this run. **Warning:
 the form DEFAULTS this field to 1** - it must be explicitly set to Zero when
-reporting a single activity, or the form keeps an empty 2nd act open.
+reporting a single activity, or the form keeps an empty 2nd act open. For two
+activities leave it at 1; for three set it to 2.
 
 ### 3. Write the description (<= 250 words each)
 
@@ -141,7 +142,9 @@ Repeat the act-specific block for acts 2 and 3 if present.
 pre-populates 8 fields (Champion Program ID, First/Last name, both emails, 1st Act of
 Advocacy, Product(s), 1st-activity Date). The remaining fields - Description, Link,
 Can IBM Amplify, How-many-more, and PRIVACY consent - cannot be prefilled and stay in
-the copy-paste sheet for manual entry once the form opens.
+the copy-paste sheet for manual entry once the form opens. With a 2nd act the URL
+also carries the 2nd-activity date (`prefill_fldsYCztbwXKtlxiT`, 9 fields in total);
+the 2nd act's type, product(s), description, link and amplify stay manual.
 
 **C. Activity log entry** - append one entry per act to the file at `ACTIVITY_LOG`.
 Create the file with a `# IBM Champion activity log` title line if it does not exist.
