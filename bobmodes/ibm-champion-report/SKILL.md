@@ -47,6 +47,14 @@ activity log live in this skill's `.env` file. It is gitignored and private.
    vault, a file on a mapped or synced drive, any path this machine can write. If the
    key is missing or empty, ask the user where the log should live, append
    `ACTIVITY_LOG=<path>` to `.env`, and continue. Do not ask again on later runs.
+4. `IBM_COMMUNITY_PROFILE_URL` and `ACE_COMMUNITY_BLOG_URL` are the user's IBM
+   Community profile page and the ACE community blog listing. When navigating to
+   the user's community profile or blog list (e.g. to retrieve a latest post for
+   reporting), use these values directly; do not ask the user for the URL.
+   **Navigation note:** `IBM_COMMUNITY_PROFILE_URL` redirects to an IBMid login
+   wall even though the content is public, so do not use it for browser navigation.
+   Use `ACE_COMMUNITY_BLOG_URL` instead, type the value of `LAST_NAME` from `.env`
+   into the blog search box, then sort by date to find the latest post.
 
 ---
 
@@ -83,7 +91,8 @@ is that nothing gets reported twice.
 If the user has more than 3 activities, tell them to submit the form again for the
 overflow and set "How many MORE" accordingly (Zero / 1 / 2) for this run. **Warning:
 the form DEFAULTS this field to 1** - it must be explicitly set to Zero when
-reporting a single activity, or the form keeps an empty 2nd act open.
+reporting a single activity, or the form keeps an empty 2nd act open. For two
+activities leave it at 1; for three set it to 2.
 
 ### 3. Write the description (<= 250 words each)
 
@@ -133,7 +142,9 @@ Repeat the act-specific block for acts 2 and 3 if present.
 pre-populates 8 fields (Champion Program ID, First/Last name, both emails, 1st Act of
 Advocacy, Product(s), 1st-activity Date). The remaining fields - Description, Link,
 Can IBM Amplify, How-many-more, and PRIVACY consent - cannot be prefilled and stay in
-the copy-paste sheet for manual entry once the form opens.
+the copy-paste sheet for manual entry once the form opens. With a 2nd act the URL
+also carries the 2nd-activity date (`prefill_fldsYCztbwXKtlxiT`, 9 fields in total);
+the 2nd act's type, product(s), description, link and amplify stay manual.
 
 **C. Activity log entry** - append one entry per act to the file at `ACTIVITY_LOG`.
 Create the file with a `# IBM Champion activity log` title line if it does not exist.
@@ -163,6 +174,11 @@ is the most convenient path since the form is on a logged-in site. Follow the
 - **Prefilled-URL-first:** navigate to the PROVEN prefilled URL built in step 5B, not
   the bare form URL - identity + Act + Product(s) + Date land automatically. Snapshot
   and confirm those 8 fields populated.
+- **Stale-draft check:** if that snapshot shows text in Description or Link, or an
+  empty Date, Airtable restored an unsent draft from this browser profile. Show the
+  user what it holds, then with their go-ahead click **Clear form** at the bottom of
+  the page, confirm the dialog, and navigate to the prefilled URL again before typing
+  anything (procedure in the field spec, "Autosaved drafts override the prefill").
 - Match fields by their visible label text, not brittle selectors.
 - Automation only types the manual fields: Description and Link, plus the Amplify
   checkbox if the user explicitly allowed amplification. Handle a product not in the
@@ -173,6 +189,18 @@ is the most convenient path since the form is on a logged-in site. Follow the
   set / not set / mismatch; retry failures once.
 - **Do NOT tick the PRIVACY consent checkbox and do NOT click Submit.** Leave the
   filled form open and hand control back for the user to review, consent, and submit.
+
+**Bob add-on - which browser MCP:** prefer **Playwright MCP** (`@playwright/mcp`; its
+tool list carries `browser_evaluate`, `browser_fill_form` and `browser_wait_for`) and
+follow the **Bob / Playwright MCP add-on** section of
+[`references/form_fields.md`](references/form_fields.md): ref clicks reach every control
+on this form and `browser_evaluate` reads the field values back. Fall back to
+**browsermcp** only when the Playwright tools are not in the live tool list -
+browsermcp needs a `browser_snapshot` right after `browser_navigate` and before the
+first `browser_type` / `browser_press_key` (it binds the tab), and its `browser_click`
+cannot reach the Amplify checkbox or the How-many-more options - both go by keyboard
+from the Link field; exact key sequences in the **Bob / browsermcp add-on** section of
+the same file. Installing and wiring either server: [`dependency.md`](dependency.md).
 
 If **no** browser MCP is available, say so - the sheet + prefilled URL from step 5
 already stand alone.

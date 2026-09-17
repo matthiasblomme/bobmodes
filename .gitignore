@@ -16,3 +16,6 @@ ACE_SupportCase_ACE13_20250722
 
 # Editor / IDE local config
 .vscode/
+
+# Playwright MCP output (console logs, page snapshots) written while filling forms
+.playwright-mcp/

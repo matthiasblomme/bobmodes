@@ -144,17 +144,31 @@ customModes:
       - Open URL, Snapshot (accessibility tree), Click, Type, Select option, Press key.
       Prefer a browser MCP that drives the user's REAL logged-in Chrome (e.g. the
       browsermcp.io extension); a fresh profile may hit a login wall on the IBM site.
+      Bob add-on - server preference: use Playwright MCP first (tool list carries
+      browser_evaluate, browser_fill_form, browser_wait_for) and follow the
+      "Bob / Playwright MCP add-on" section of references/form_fields.md; fall back
+      to browsermcp ("Bob / browsermcp add-on" section: snapshot binds the tab,
+      Amplify and How-many-more go by keyboard from the Link field) only when the
+      Playwright tools are absent. Install and wiring for both: dependency.md.
       IF no browser MCP is present, SKIP this phase and say so - the sheet and
       prefilled URL from Phase 5 already stand alone.
 
       ### 6.2 Fill procedure (follow references/form_fields.md "Browser automation")
       - Navigate to the PROVEN prefilled URL you built in 5.2 (identity + Act + Product(s)
         + Date land automatically); snapshot and confirm those 8 fields populated.
+      - Stale-draft check: if Description or Link already hold text, or the Date is
+        empty, Airtable restored an unsent draft from this browser profile. Show the
+        user what it holds; with their go-ahead click "Clear form" at the bottom of the
+        page, confirm the dialog, and navigate to the prefilled URL again before typing
+        anything (references/form_fields.md, "Autosaved drafts override the prefill").
       - Match fields by visible LABEL text, not brittle selectors (Airtable markup is generated).
       - Type the manual fields: Description (<=250 words) and Link.
       - For a product not in the list, use "Other -> type the name".
       - "How many MORE Acts of Advocacy" DEFAULTS to 1, not Zero (options: Zero / 1 / 2).
-        For a single-act submission it MUST be explicitly set to Zero.
+        For a single-act submission it MUST be explicitly set to Zero; for two acts
+        leave it at 1 (the 2nd-act block is already open); for three set 2. A 2nd act
+        also gets its date prefilled (prefill_fldsYCztbwXKtlxiT); its type, product(s),
+        description, link and amplify are typed - see "Second act" in the field spec.
       - Tick the Amplify checkbox ONLY if the user explicitly allowed amplification.
 
       ### 6.3 Verify, then stop (NEVER submit)
