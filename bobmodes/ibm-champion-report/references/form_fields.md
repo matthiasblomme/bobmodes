@@ -124,7 +124,7 @@ not listed, select **Other** and type the product name."
 ### 5. Can IBM Amplify this activity? (checkbox)
 
 - **NOT prefillable** -> manual. Ask the user; do not assume.
-- **Bob / browsermcp add-on:** `browser_click` on the checkbox ref lands on the outer
+- **browsermcp fallback:** `browser_click` on the checkbox ref lands on the outer
   wrapper and does not tick it. After typing the Link value the Link field is already
   focused - do NOT re-focus it with an empty `browser_type` (that clears the field).
   Press `Tab` once (focus moves to the checkbox), press `Space`.
@@ -149,7 +149,7 @@ not listed, select **Other** and type the product name."
 - Options: **Zero**, **1**, **2**. **NOT prefillable** (defaults to `1`); set manually.
 - One act: set `Zero`. Two acts: leave the default `1` untouched - the 2nd-act block is
   already open (verified 2026-09-17). Three acts: set `2`.
-- **Bob / browsermcp add-on:** `browser_click` does not open the option list in the a11y
+- **browsermcp fallback:** `browser_click` does not open the option list in the a11y
   snapshot. After typing the Link value the Link field is already focused - do NOT
   re-focus it with an empty `browser_type` (that clears the field). Press `Tab` three
   times (Amplify, Date, then this combobox), type the option one key at a time with
@@ -194,64 +194,71 @@ Put these in the copy-paste sheet.
 ## Browser automation (fill the form in place)
 
 If a browser-automation MCP is available, you can drive the form directly. The proven
-prefilled URL already lands the 8 fields above; use automation to add the manual fields
-(Description, Link, Amplify) and to verify.
+prefilled URL lands the identity, Act, Product(s) and Date fields; automation adds the
+manual fields (Description, Link, Amplify, How-many-more, a 2nd act) and verifies. Two
+workflows share the open sequence, the second-act notes and the hard rules:
 
-### Tool-agnostic action vocabulary
-
-Skills do not hardcode tool names - read the live tool list and use whatever browser MCP
-is installed. Map these abstract actions onto the concrete tools you find:
-
-| Action | Browser/Playwright MCP | Chrome DevTools MCP | Claude-in-Chrome MCP |
-|---|---|---|---|
-| Open a URL | `browser_navigate` | `navigate_page` | `navigate` |
-| Read the page (a11y snapshot) | `browser_snapshot` | `take_snapshot` | `read_page` / `get_page_text` |
-| Click an element | `browser_click` | `click` | `computer` (left_click) |
-| Type into a field | `browser_type` | `fill` | `computer` (type) / `form_input` |
-| Choose a select option | `browser_select_option` | click the option | click the option |
-| Read field values / DOM | - | `evaluate_script` | `javascript_tool` |
+- **Normal** (default): snapshot-based, every check, end screenshot - "Normal workflow".
+- **Lean** (`lean: on` in the request): selector-based, one read at the end - "Lean
+  workflow". Needs `browser_evaluate` and selector targets, so Playwright MCP or a Claude
+  surface; on browsermcp say so in one line and run the normal workflow.
 
 If **no** browser MCP is present, skip this section, say so, and deliver the prefilled
 URL + copy-paste sheet only.
 
-### Why the real Chrome matters
+### Which server
 
-Prefer a browser MCP that drives the user's **actual logged-in Chrome** (extension-based,
-e.g. Claude-in-Chrome or browsermcp.io). The form sits behind `ibm.biz/champ-report`; a
-fresh logged-out profile may hit a login wall. If it does, stop and ask the user to log
-in (or switch to an extension-based MCP), then resume.
+Playwright MCP (`@playwright/mcp`) is the primary server for Bob: refs from
+`browser_snapshot` and CSS selectors both work as click/type targets, `browser_fill_form`
+sets several fields in one call, `browser_evaluate` reads values back and
+`browser_wait_for` handles the late-rendering form. browsermcp is the fallback (own
+section below). Claude's surfaces (Claude-in-Chrome, the in-app Browser pane) map the
+same steps onto `find` / `computer` / `javascript_tool`. Install and wiring:
+`dependency.md` in the skill folder.
 
-**Autosaved drafts override the prefill (verified 2026-09-15 and 2026-09-17 in the
-logged-in Chrome).** Airtable keeps an unsent draft of the fields you typed into, per
-browser profile (`localStorage` key
-`AirtableLocalPersister.formPageElementSavedFormDataByElementId.<app>.<page>.<element>`)
-and applies it AFTER the URL prefill: a stale draft re-fills Description and Link and,
-if the date was touched in that draft, nulls the prefilled Date - the snapshot then
-shows 7 of 8 fields. Any persistent profile can carry one; only a fresh or isolated
-profile never does. The check and the fix, both without JavaScript:
+| Action | Playwright MCP | browsermcp | Chrome DevTools MCP | Claude-in-Chrome / Browser pane |
+|---|---|---|---|---|
+| Open a URL | `browser_navigate` | `browser_navigate` | `navigate_page` | `navigate` |
+| Wait for the form | `browser_wait_for` (text) | `browser_wait` | - | `computer` wait |
+| Read the page (a11y snapshot) | `browser_snapshot` | `browser_snapshot` | `take_snapshot` | `read_page` / `find` |
+| Click an element | `browser_click` (ref or selector) | `browser_click` (ref) | `click` | `computer` left_click (ref) |
+| Type into a field | `browser_type` / `browser_fill_form` | `browser_type` | `fill` | `computer` type |
+| Read field values | `browser_evaluate` | - | `evaluate_script` | `javascript_tool` |
+| Screenshot | `browser_take_screenshot` | `browser_screenshot` | `take_screenshot` | `computer` screenshot |
 
-1. After the first snapshot, treat the form as **stale** if Description or Link already
-   hold text, the Date is empty although the URL carried it, or any 2nd/3rd-act field
-   is filled.
-2. Show the user what the draft holds (it may be an unfiled activity) and ask before
-   discarding it.
-3. With their go-ahead click **Clear form** (a `role=button` at the bottom of the page,
-   next to Submit), confirm the "Clear form? Any data you've filled out so far will be
-   removed" dialog with **Confirm**, then navigate to the prefilled URL **again** -
-   Clear form empties the stored draft and the prefill lands clean on the reload
-   (verified 2026-09-17: draft columns empty, Description and Link empty, 8 fields
-   landed).
-4. Re-snapshot and confirm the 8 fields before typing anything. Typing into the form
-   overwrites the draft in place, so never type over a draft you have not shown the user.
+Playwright MCP and browsermcp share the `browser_` prefix but not the tool set
+(`browser_take_screenshot` vs `browser_screenshot`, `browser_wait_for` vs `browser_wait`,
+`browser_console_messages` vs `browser_get_console_logs`); never copy an auto-approve
+list from one to the other.
 
-### Fill procedure (fill + verify, never submit)
+### Open sequence (always clear; both workflows)
 
-1. **Navigate** to the proven prefilled URL above (identity + Act + Product + Date land
-   automatically).
-2. **Snapshot** and confirm those 8 fields populated. If Description or Link already
-   hold text, or the Date is empty, the browser restored an autosaved draft: follow
-   "Autosaved drafts override the prefill" above (Clear form, confirm, navigate again)
-   before going on.
+Airtable keeps an unsent draft of the fields you typed into, per browser profile, and
+applies it AFTER the URL prefill: a stale draft re-fills Description and Link and, if the
+date was touched in it, nulls the prefilled Date (seen 2026-09-15, reproduced
+2026-09-17). Any persistent profile can carry one - the logged-in Chrome and Playwright's
+own `--browser chrome` profile alike - so the form is always cleared first, without
+reading it. A draft is discarded unseen; that is the accepted trade-off.
+
+1. Navigate to the **bare** form URL; wait for the text "Clear form".
+2. On a fresh profile a cookie banner covers the page: click "Reject All, Except Strictly
+   Necessary" (Playwright selector `button:has-text("Reject All")`; skip if absent).
+3. Click **Clear form** (`[role=button]:has-text("Clear form")`, bottom of the page next
+   to Submit), then **Confirm** in the "Clear form?" dialog (`button:has-text("Confirm")`).
+4. Navigate to the **prefilled** URL; wait for the text "Champion Program ID".
+
+Clearing has to precede the prefilled navigation because Clear form wipes prefilled
+values too. A fix pass later in the run never clears. Verified 2026-09-17: draft storage
+empty after the sequence, Description and Link empty, all prefilled fields landed (8,
+or 9 with a 2nd act); the whole sequence by selector through Playwright MCP in 7 calls.
+Airtable renders after `navigate` returns - without the wait, a snapshot or evaluate
+sees an empty shell titled "Interface Form".
+
+### Normal workflow (fill + verify, never submit)
+
+1. **Open** the form with the sequence above.
+2. **Snapshot** (`browser_snapshot`) and confirm the prefilled fields populated: 8 for one
+   act, 9 with a 2nd act. The refs of the manual fields come from this snapshot.
 3. **Resolve every manual field by its accessibility label / name, NEVER by hardcoded
    pixel coordinates.** Airtable markup is generated, and - critically - once the
    Description textarea is filled the whole lower block shifts down (~50px), so any
@@ -266,60 +273,106 @@ profile never does. The check and the fix, both without JavaScript:
    - Link input: labelled **"Please provide a link to this material if possible."**
    - Amplify checkbox: **"Can IBM Amplify this activity?"**
    - How-many-more dropdown: combobox **"How many MORE Acts of Advocacy..."**
-4. **Type the manual fields:** Description (polished, <=250 words), Link (URL).
-5. **Amplify checkbox:** tick **only** if the user explicitly allowed amplification.
+4. **Type the manual fields:** Description (polished, <=250 words), Link (URL) -
+   `browser_type` on the refs (add `slowly: true` if characters are dropped).
+5. **Amplify checkbox:** tick **only** if the user explicitly allowed amplification -
+   `browser_click` on the checkbox ref.
 6. **How many MORE Acts of Advocacy defaults to `1`, not Zero.** For a single-act
    submission you MUST change it to **Zero** - otherwise the form keeps an empty 2nd act
    open and it is the easiest field to forget. Set `1`/`2` only when actually filling a
-   2nd/3rd act.
-7. **Re-snapshot and verify:** report each field as set / not set / mismatch; retry
-   failures once. Prefer reading values back via the a11y tree over pixel-reading.
+   2nd/3rd act. Click the combobox ref, type the option text so the list filters to one
+   entry, then click that option's ref (or `Enter`). Refs change after any select changes
+   value - re-snapshot before the next click.
+7. **Re-snapshot and verify:** read every field back with `browser_evaluate` (see the
+   readback in the lean workflow), take one `browser_take_screenshot` for the human,
+   and report each field as set / not set / mismatch; retry failures once. Prefer
+   reading values back via the a11y tree or the DOM over pixel-reading.
 8. **Stop before submit.** Do **NOT** tick the **PRIVACY** consent checkbox and do
    **NOT** click **Submit**. Leave the filled form open and hand control back.
 
-### Bob / Playwright MCP add-on (preferred; dry run completed from Bob 2026-09-15)
+### Lean workflow (`lean: on`)
 
-Use this section when the live tool list carries the Playwright MCP tools
-(`browser_navigate`, `browser_snapshot`, `browser_find`, `browser_click`, `browser_type`,
-`browser_press_key`, `browser_select_option`, `browser_fill_form`, `browser_evaluate`,
-`browser_wait_for`, `browser_take_screenshot`). It is the preferred server for Bob: ref
-clicks reach every control on this form and `browser_evaluate` reads values back. The
-browsermcp add-on below is the fallback when these tools are absent. Install and wiring:
-`dependency.md` in the skill folder.
+Same open sequence, then no snapshot and no screenshot: fill by selector, read once.
+Verified 2026-09-17 through Playwright MCP against the live form (selector targets,
+`browser_fill_form` on the contenteditable Description, the link input and the ARIA
+checkbox, combobox by click + type + submit).
 
-Deltas to the generic procedure above:
+1. **Open** the form with the sequence above.
+2. **One `browser_fill_form`** for every text field and checkbox of every act. Field
+   shape (the tool's schema): `{ "target": <selector>, "name": <label>, "type":
+   "textbox" | "checkbox", "value": <string, "true"/"false" for a checkbox> }`.
+3. **Comboboxes last**, each in two calls: `browser_click` on the wrapper
+   `[role=combobox] >> nth=N` (opens the list and focuses an `input[role=combobox]`
+   with placeholder "Find an option"), then `browser_type` on `input[role=combobox]`
+   with the exact option text and `submit: true`. `browser_type` on the wrapper itself
+   fails ("not an input"). Order: 2nd-act type, 2nd-act product(s), then How-many-more
+   (`Zero` for one act; untouched for two; `2` for three) - selecting a value re-renders
+   the block, so nothing else is targeted after it.
+4. **One `browser_evaluate`** returning every field, compared to the copy-paste sheet:
 
-- **Steps 1-2:** `browser_navigate` to the prefilled URL, then `browser_wait_for` with
-  `text: "Champion Program ID"` before anything else - Airtable renders after navigate
-  returns, and an early snapshot or evaluate sees an empty shell titled "Interface Form"
-  (measured 2026-09-15). Then `browser_snapshot` and confirm the 8 prefilled fields.
-- **Step 3:** targets are the refs from that snapshot (or from `browser_find`), never
-  coordinates. Refs change after any select changes value - re-snapshot before the next
-  click.
-- **Step 4:** `browser_type` on the Description ref (a contenteditable DIV; add
-  `slowly: true` if characters are dropped) and on the Link ref.
-- **Step 5:** `browser_click` on the Amplify checkbox ref.
-- **Step 6:** `browser_click` on the How-many-more combobox ref, `browser_type` the
-  option text (`Zero`, `1` or `2`) so the list filters to one entry, then click that
-  option's ref (or `browser_press_key` `Enter`).
-- **Step 7:** verify with `browser_evaluate`, for example
-  `() => ({ act: document.querySelector("[role=combobox]").innerText, amplify: document.querySelector("[role=checkbox]").getAttribute("aria-checked"), date: document.querySelector("input[placeholder=yyyy-mm-dd]").value, more: [...document.querySelectorAll("[role=combobox]")].at(-1).innerText })`
-  and re-snapshot; retry failures once.
-- Tool names differ from browsermcp's despite the shared prefix: `browser_take_screenshot`
-  (not `browser_screenshot`), `browser_wait_for` (not `browser_wait`),
-  `browser_console_messages` (not `browser_get_console_logs`). Do not copy an
-  auto-approve list from one server to the other.
-- With `--browser chrome` the server drives the installed Chrome under its own
-  persistent profile, not the logged-in one: expect a cookie banner on the first load,
-  and the autosaved-draft check still applies (that profile keeps drafts from earlier
-  runs; only `--isolated` is immune). With `--extension` (logged-in Chrome) it applies
-  as well.
+   ```
+   () => { const tb=[...document.querySelectorAll("textarea, input[type=text]")].map(e=>e.value);
+     const cb=[...document.querySelectorAll("[role=combobox]")].map(c=>c.innerText.trim());
+     const chk=[...document.querySelectorAll("[role=checkbox]")].map(c=>c.getAttribute("aria-checked"));
+     const d=l=>document.querySelector("[role=textbox][aria-label="+l+"]")?.innerText||"";
+     return { championId: tb[0], act1: cb[0], desc1: d("A1_DESCRIPTION"), links: tb.filter(v=>v.startsWith("http")),
+       amplify: chk, howMany: cb[2], act2: cb[3], desc2: d("A2_DESCRIPTION"),
+       dates: [...document.querySelectorAll("input[placeholder=yyyy-mm-dd]")].map(e=>e.value),
+       chips: [...document.querySelectorAll("[aria-label*=Remove]")].length }; }
+   ```
 
-### Bob / browsermcp add-on (fallback; verified by Bob on browsermcp, 2026-09)
+   Mismatches get one fix pass (re-issue only the failed calls) and one more evaluate;
+   then stop. Report one status line per field group; print the sheet only if the fill
+   was skipped or a mismatch remains.
+5. **Stop before submit** - same rule as step 8 above.
 
-Deltas to the procedure above when the browser MCP is **browsermcp** (Bob's default).
-Every other rule above still applies - in particular step 3 (resolve by label / ref).
+Selector table (DOM order; observed 2026-09-15/17):
 
+| Control | Selector |
+|---|---|
+| Description act 1 / act 2 | `[role=textbox][aria-label=A1_DESCRIPTION]` / `...A2_DESCRIPTION` |
+| Link act 1 / act 2 | `input[type=text]:not([placeholder]) >> nth=1` / `nth=2` (nth=0 is the Champion ID) |
+| Amplify act 1 / act 2, PRIVACY | `[role=checkbox] >> nth=0` / `nth=1` / `nth=2` (PRIVACY is never touched) |
+| Act 1, Products 1, How-many-more, Act 2, Products 2 | `[role=combobox] >> nth=0` .. `nth=4` |
+| Date act 1 / act 2 | `input[placeholder="yyyy-mm-dd"] >> nth=0` / `nth=1` (prefilled; manual only if the URL lacked it) |
+
+Budget: about 10 tool calls for one act, 13 for two; one read, no image. Claude
+surfaces run the same plan with `javascript_tool` for the read and `find` + `computer`
+for the actions.
+
+### Second act (verified 2026-09-17, two acts)
+
+When the submission carries a 2nd act, the prefilled URL adds its date
+(`prefill_fldsYCztbwXKtlxiT=<yyyy-mm-dd>`, lands with the other 8) and "How many MORE"
+stays at its default `1`, so the 2nd-act block is open from the first snapshot - do not
+touch that field for two acts (set `2` for three). Fill the 1st act as above, then:
+
+- **Type:** the combobox under the "2nd Act of Advocacy." label (the 4th combobox on the
+  page, after 1st Act, 1st Product(s) and How-many-more). Click it, type the exact
+  `act_options.md` entry, confirm the filtered list shows that one entry, `Enter`.
+- **Product(s):** the empty multi-select combobox in the 2nd-act block. Click it, type the
+  exact `product_options.md` name, then check the option list: `Enter` takes the **top**
+  match, and typing `IBM MQ` lists `IBM MQ`, `IBM MQ (Developer)`, `IBM MQ on Cloud` in
+  that order. Repeat per product; a chip with a Remove button appears for each.
+- **Description:** textbox `A2_DESCRIPTION` (same contenteditable DIV as `A1_DESCRIPTION`,
+  same 250-word cap). **Link:** the second textbox labelled "Please provide a link to
+  this material if possible.". **Amplify:** the second "Can IBM Amplify this activity?"
+  checkbox. **Date:** already prefilled; the manual sequence in field 6 applies only if
+  the URL did not carry it.
+- Verify both acts from the DOM before stopping: 2 links, 2 description word counts,
+  checkbox states in order (Amplify 1, Amplify 2, PRIVACY), both `yyyy-mm-dd` inputs.
+
+A 3rd act works the same way with the third block, except that no field ID is exposed
+for its date - that one goes through the manual date sequence.
+
+### browsermcp (fallback; normal workflow only; verified by Bob, 2026-09)
+
+Deltas to the normal workflow when the browser MCP is **browsermcp**. Every other rule
+above still applies - in particular step 3 (resolve by label / ref). No lean workflow
+here: browsermcp has no `evaluate` and no selector targets.
+
+- **Open sequence:** navigate, snapshot (binds the tab), click the "Clear form" ref,
+  snapshot, click the "Confirm" ref, navigate to the prefilled URL, snapshot.
 - **Tab binding:** call `browser_snapshot` immediately after `browser_navigate` and
   before the first `browser_type` / `browser_press_key`; without it those calls fail with
   "No tab with given id". Sequence: `browser_navigate` -> `browser_snapshot` -> type/key.
@@ -334,39 +387,24 @@ Every other rule above still applies - in particular step 3 (resolve by label / 
   `browser_snapshot` between the Tab presses and `Enter` - it closes the dropdown.
 - **Step 7 (verify):** re-snapshot only after `Enter`; retry failures once.
 
-### Second act (verified 2026-09-17, two acts, Claude-in-Chrome)
+### Surface gotchas
 
-When the submission carries a 2nd act, the prefilled URL adds its date
-(`prefill_fldsYCztbwXKtlxiT=<yyyy-mm-dd>`, lands with the other 8) and "How many MORE"
-stays at its default `1`, so the 2nd-act block is open from the first snapshot - do not
-touch that field for two acts (set `2` for three). Fill the 1st act as above, then:
-
-- **Type:** the combobox under the "2nd Act of Advocacy." label (the 4th combobox on the
-  page, after 1st Act, 1st Product(s) and How-many-more). Click it, type the exact
-  `act_options.md` entry, confirm the filtered list shows that one entry, `Enter`.
-- **Product(s):** the empty multi-select combobox in the 2nd-act block. Click it, type the
-  exact `product_options.md` name, then check the option list: `Enter` takes the **top** match, and
-  typing `IBM MQ` lists `IBM MQ`, `IBM MQ (Developer)`, `IBM MQ on Cloud` in that order.
-  Repeat per product; a chip with a Remove button appears for each.
-- **Description:** textbox `A2_DESCRIPTION` (same contenteditable DIV as `A1_DESCRIPTION`,
-  same 250-word cap). **Link:** the second textbox labelled "Please provide a link to
-  this material if possible.". **Amplify:** the second "Can IBM Amplify this activity?"
-  checkbox. **Date:** already prefilled; the manual sequence in field 6 applies only if
-  the URL did not carry it.
-- Verify both acts from the DOM before stopping: 2 links, 2 description word counts,
-  checkbox states in order (Amplify 1, Amplify 2, PRIVACY), both `yyyy-mm-dd` inputs.
-
-A 3rd act works the same way with the third block, except that no field ID is exposed
-for its date - that one goes through the manual date sequence.
-
-### First click after navigate may only focus the window
-
-In the extension-driven Chrome a whole batch of clicks and typing right after
-`navigate` was acknowledged by the tool and reached nothing: the page had no focus
-(`document.hasFocus()` false) and the first click only brought the window to the front.
-After navigating, click the first target, read `document.activeElement` (or re-snapshot
-and look for the focused state) and only then type; if the control is not focused,
-click it again. Observed 2026-09-17.
+- **Claude-in-Chrome: the first click after `navigate` may only focus the window.** A
+  whole batch of clicks and typing was acknowledged and reached nothing because the
+  page had no focus (`document.hasFocus()` false). After navigating, click the first
+  target, read `document.activeElement`, and only then type; if the control is not
+  focused, click it again (observed 2026-09-17).
+- **In-app Browser pane: `key` sends keydown with an empty `key`/`code`**, so Space never
+  toggles a checkbox and Enter never commits a filtered option; ref clicks work for
+  both, including clicking the filtered option (observed 2026-09-15).
+- **A filled Link field is rendered as a link:** clicking it tries to open the URL
+  instead of focusing the input. Tab into it from the Description (tabbing selects
+  the content, typing replaces it).
+- Refs renumber after any select changes value; re-find before the next click. Airtable
+  rewrites the tab URL with `+` and `%2C` after load - harmless.
+- `--browser chrome` (Playwright) drives the installed Chrome under its own persistent
+  profile, not the logged-in one; `--extension` attaches to the logged-in Chrome. The
+  form is public, so either works; a login wall means stop and hand over.
 
 ### If the browser MCP starts erroring mid-fill
 

@@ -181,41 +181,33 @@ so the user can paste it themselves.
 
 ### 6. Offer to fill the form in the browser (if a browser MCP is available)
 
-Check the live tool list for a browser-automation MCP (Browser MCP, Playwright MCP,
-Chrome DevTools MCP, etc.). If one is present, offer to fill the form directly - it
-is the most convenient path since the form is on a logged-in site. Follow the
-**Browser automation** section of [`references/form_fields.md`](references/form_fields.md):
+Check the live tool list for a browser-automation MCP. Playwright MCP
+(`browser_navigate`, `browser_snapshot`, `browser_fill_form`, `browser_evaluate`, ...) is
+the primary server; browsermcp is the fallback; Claude's own surfaces map the same
+steps. Installing and wiring: [`dependency.md`](dependency.md). If one is present, offer
+to fill the form directly and follow the **Browser automation** section of
+[`references/form_fields.md`](references/form_fields.md) - the **Normal workflow** by
+default, the **Lean workflow** when lean mode is on:
 
-- **Prefilled-URL-first:** navigate to the PROVEN prefilled URL built in step 5B, not
-  the bare form URL - identity + Act + Product(s) + Date land automatically. Snapshot
-  and confirm those 8 fields populated.
-- **Stale-draft check:** if that snapshot shows text in Description or Link, or an
-  empty Date, Airtable restored an unsent draft from this browser profile. Show the
-  user what it holds, then with their go-ahead click **Clear form** at the bottom of
-  the page, confirm the dialog, and navigate to the prefilled URL again before typing
-  anything (procedure in the field spec, "Autosaved drafts override the prefill").
-- Match fields by their visible label text, not brittle selectors.
+- **Always clear first:** open the bare form URL, click **Clear form**, confirm the
+  dialog, then navigate to the PROVEN prefilled URL built in step 5B - identity + Act +
+  Product(s) + Date land automatically (8 fields, 9 with a 2nd act). Airtable restores
+  unsent drafts from the browser profile on top of the prefill; clearing first is what
+  keeps them out.
+- Match fields by their accessibility label / ref, or a selector on that label - never
+  by screen coordinates.
 - Automation only types the manual fields: Description and Link, plus the Amplify
   checkbox if the user explicitly allowed amplification. Handle a product not in the
   list via **Other -> type the name**.
 - **"How many MORE Acts of Advocacy" defaults to 1, not Zero** (options: Zero / 1 / 2).
-  For a single-act submission it MUST be explicitly set to Zero.
-- **Fill + verify, never submit:** after filling, re-snapshot and report each field as
-  set / not set / mismatch; retry failures once.
+  For a single-act submission it MUST be explicitly set to Zero; leave it at 1 for two
+  acts; set 2 for three.
+- **Fill + verify, never submit.** Normal workflow: snapshot after the prefill,
+  re-snapshot after each select, read every field back at the end, one screenshot for
+  the user, report each field as set / not set / mismatch, retry failures once. Lean
+  workflow: one read at the end, one fix pass.
 - **Do NOT tick the PRIVACY consent checkbox and do NOT click Submit.** Leave the
   filled form open and hand control back for the user to review, consent, and submit.
-
-**Bob add-on - which browser MCP:** prefer **Playwright MCP** (`@playwright/mcp`; its
-tool list carries `browser_evaluate`, `browser_fill_form` and `browser_wait_for`) and
-follow the **Bob / Playwright MCP add-on** section of
-[`references/form_fields.md`](references/form_fields.md): ref clicks reach every control
-on this form and `browser_evaluate` reads the field values back. Fall back to
-**browsermcp** only when the Playwright tools are not in the live tool list -
-browsermcp needs a `browser_snapshot` right after `browser_navigate` and before the
-first `browser_type` / `browser_press_key` (it binds the tab), and its `browser_click`
-cannot reach the Amplify checkbox or the How-many-more options - both go by keyboard
-from the Link field; exact key sequences in the **Bob / browsermcp add-on** section of
-the same file. Installing and wiring either server: [`dependency.md`](dependency.md).
 
 If **no** browser MCP is available, say so - the sheet + prefilled URL from step 5
 already stand alone.
@@ -228,6 +220,24 @@ already stand alone.
 - A link is effectively mandatory.
 - The log entry from step 5C was written before the click. If the user decides not to
   submit after all, remove that entry so the log stays true.
+
+## Lean mode (`lean: on`)
+
+Off by default. Switched on by `lean: on` anywhere in the request, or by "lean",
+"economy", "save coins" / "save tokens". It trades checks for spend - fewer reads, fewer
+round trips - and never skips: identity from `.env`, the 250-word cap, the always-clear
+open sequence, the end check, the log append, stop before PRIVACY and Submit.
+
+| Step | Lean behaviour |
+|---|---|
+| 1 | `.env` and the field spec as usual; the activity log is grepped for the normalised link and the artifact's name instead of read in full |
+| 2-4 | option lookups by grep only; one consolidated confirmation message carrying the whole sheet and the mapped option values, skipped when the user named the exact option; proceed on a single "ok" |
+| 5 | sheet, URL and log entry as usual |
+| 6 | the **Lean workflow** in the field spec: open sequence, one `browser_fill_form`, comboboxes by click + type with submit, one `browser_evaluate` compared to the sheet, one fix pass; no snapshot, no screenshot |
+| 7 | URL plus one status line per field group; the sheet is repeated only if the browser fill was skipped or a mismatch remains |
+
+Lean needs `browser_evaluate` and selector targets (Playwright MCP or a Claude surface).
+On browsermcp say so in one line and run the normal workflow.
 
 ---
 

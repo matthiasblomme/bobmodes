@@ -151,31 +151,25 @@ customModes:
 
 
       ### 6.1 Detect and use a browser MCP
-      Check the live tool list for a browser-automation MCP (Browser MCP, Playwright
-      MCP, Chrome DevTools MCP, etc.). Skills do NOT hardcode tool names - map the
-      abstract actions to whatever is installed (see the action vocabulary table in
-      references/form_fields.md):
-      - Open URL, Snapshot (accessibility tree), Click, Type, Select option, Press key.
-      Prefer a browser MCP that drives the user's REAL logged-in Chrome (e.g. the
-      browsermcp.io extension); a fresh profile may hit a login wall on the IBM site.
-      Bob add-on - server preference: use Playwright MCP first (tool list carries
-      browser_evaluate, browser_fill_form, browser_wait_for) and follow the
-      "Bob / Playwright MCP add-on" section of references/form_fields.md; fall back
-      to browsermcp ("Bob / browsermcp add-on" section: snapshot binds the tab,
-      Amplify and How-many-more go by keyboard from the Link field) only when the
-      Playwright tools are absent. Install and wiring for both: dependency.md.
+      Check the live tool list for a browser-automation MCP. Playwright MCP is the
+      primary server (browser_navigate, browser_snapshot, browser_fill_form,
+      browser_evaluate, browser_wait_for); browsermcp is the fallback (refs and
+      snapshots only, keyboard for Amplify and How-many-more - see its section in
+      references/form_fields.md). Install and wiring for both: dependency.md. Skills do
+      NOT hardcode tool names - map the abstract actions to whatever is installed (see
+      the action vocabulary table in references/form_fields.md).
       IF no browser MCP is present, SKIP this phase and say so - the sheet and
       prefilled URL from Phase 5 already stand alone.
 
-      ### 6.2 Fill procedure (follow references/form_fields.md "Browser automation")
-      - Navigate to the PROVEN prefilled URL you built in 5.2 (identity + Act + Product(s)
-        + Date land automatically); snapshot and confirm those 8 fields populated.
-      - Stale-draft check: if Description or Link already hold text, or the Date is
-        empty, Airtable restored an unsent draft from this browser profile. Show the
-        user what it holds; with their go-ahead click "Clear form" at the bottom of the
-        page, confirm the dialog, and navigate to the prefilled URL again before typing
-        anything (references/form_fields.md, "Autosaved drafts override the prefill").
-      - Match fields by visible LABEL text, not brittle selectors (Airtable markup is generated).
+      ### 6.2 Fill procedure (references/form_fields.md "Browser automation")
+      Normal workflow by default; the Lean workflow when lean mode is on (LEAN MODE).
+      - Always clear first: open the bare form URL, click "Clear form", confirm the
+        dialog, THEN navigate to the PROVEN prefilled URL from 5.2 (identity + Act +
+        Product(s) + Date land automatically; 9 fields with a 2nd act). Airtable
+        restores unsent drafts from the browser profile on top of the prefill;
+        clearing first keeps them out.
+      - Normal: snapshot and confirm the prefilled fields; resolve every manual field by
+        its accessibility label / ref, never by screen coordinates.
       - Type the manual fields: Description (<=250 words) and Link.
       - For a product not in the list, use "Other -> type the name".
       - "How many MORE Acts of Advocacy" DEFAULTS to 1, not Zero (options: Zero / 1 / 2).
@@ -186,7 +180,9 @@ customModes:
       - Tick the Amplify checkbox ONLY if the user explicitly allowed amplification.
 
       ### 6.3 Verify, then stop (NEVER submit)
-      - Re-snapshot and report each field as set / not set / mismatch; retry failures once.
+      - Normal: re-snapshot after each select, read every field back at the end, one
+        screenshot for the user, report each field as set / not set / mismatch; retry
+        failures once. Lean: one read at the end, one fix pass.
       - NEVER tick the PRIVACY / Credly consent checkbox (legal agreement - user only).
       - NEVER click Submit. Leave the filled form open and hand control back.
       - IF the page is unrecognizable (redesign, login wall, captcha), STOP and fall back
@@ -199,6 +195,25 @@ customModes:
       - The log entry from 5.3 was written before the click. IF the user decides not to
         submit after all, remove that entry so the log stays true.
 
+
+      ## LEAN MODE (lean: on)
+
+      Off by default; on when the request carries "lean: on", "lean", "economy" or
+      "save coins" / "save tokens". Fewer reads and round trips; never skips identity
+      from .env, the 250-word cap, the always-clear open sequence, the end check, the
+      log append, or the stop before PRIVACY and Submit.
+      - Phase 1: grep the activity log for the normalised link and the artifact name
+        instead of reading it in full.
+      - Phases 2-4: option lookups by grep only; ONE consolidated confirmation message
+        with the whole sheet and the mapped options (skipped when the user named the
+        exact option); proceed on a single "ok".
+      - Phase 6: the "Lean workflow" in references/form_fields.md - open sequence, one
+        browser_fill_form by selector, comboboxes by click + type with submit, one
+        browser_evaluate compared to the sheet, one fix pass; no snapshot, no screenshot.
+      - Phase 7: URL plus one status line per field group; the sheet only if the fill
+        was skipped or a mismatch remains.
+      Lean needs browser_evaluate and selector targets (Playwright MCP or a Claude
+      surface); on browsermcp say so in one line and run the normal workflow.
 
       ## OUTPUT HYGIENE
 
