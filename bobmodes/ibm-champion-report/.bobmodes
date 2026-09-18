@@ -53,6 +53,10 @@ customModes:
         ACTIVITY_LOG=<path> to .env, and continue; do not ask again on later runs.
       - IF the log file exists, read it: its entries are what has already been reported
         and feed the duplicate check in 2.1. A missing file is normal on first use.
+      - FILL_MODE = the default workflow, "normal" or "lean" (see LEAN MODE); a
+        request saying "lean: on" / "lean" or "normal" overrides it for that run;
+        missing or empty means normal. Do not ask which workflow to use - read it,
+        and say which one is running in one line.
 
 
       ## PHASE 2: GATHER THE ACTIVITY
@@ -198,8 +202,9 @@ customModes:
 
       ## LEAN MODE (lean: on)
 
-      Off by default; on when the request carries "lean: on", "lean", "economy" or
-      "save coins" / "save tokens". Fewer reads and round trips; never skips identity
+      Default from FILL_MODE in .env (normal unless set to lean); a request switches
+      it for one run with "lean: on", "lean", "economy", "save coins" or "normal".
+      Fewer reads and round trips; never skips identity
       from .env, the 250-word cap, the always-clear open sequence, the end check, the
       log append, or the stop before PRIVACY and Submit.
       - Phase 1: grep the activity log for the normalised link and the artifact name

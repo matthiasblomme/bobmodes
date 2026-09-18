@@ -14,7 +14,8 @@ Bob loads every enabled tool definition into every conversation (no progressive
 disclosure), so keep only the tools the skill needs enabled, disable this server when
 you are not reporting activities, and for a reporting session disable the servers the
 skill does not use (in this setup the ACE and doc-kb ones) - every enabled tool is paid
-for on every turn. `lean: on` in the request cuts the reads and round trips further;
+for on every turn. The lean workflow cuts the reads and round trips further: set
+`FILL_MODE=lean` in `.env` to make it the default, or say `lean: on` for one run;
 see "Lean mode" in SKILL.md.
 
 ## Playwright MCP

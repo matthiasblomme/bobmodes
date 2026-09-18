@@ -58,6 +58,10 @@ activity log live in this skill's `.env` file. It is gitignored and private.
    wall even though the content is public, so do not use it for browser navigation.
    Use `ACE_COMMUNITY_BLOG_URL` instead, type the value of `LAST_NAME` from `.env`
    into the blog search box, then sort by date to find the latest post.
+5. `FILL_MODE` is the default workflow for the run: `normal` (every check, end
+   screenshot) or `lean` (one read at the end - see "Lean mode"). A request that
+   says `lean: on` / "lean" or `normal` overrides it for that run; missing or empty
+   means `normal`. Do not ask which workflow to use - read it.
 
 ---
 
@@ -68,7 +72,9 @@ activity log live in this skill's `.env` file. It is gitignored and private.
 - Read [`references/form_fields.md`](references/form_fields.md) - the spec only; the
   option lists are separate files looked up by grep in steps 2 and 4.
 - Read `.env`. Confirm the identity block silently (do not echo full emails unless
-  the user asks); if a required key is missing, ask the user to fill `.env`.
+  the user asks); if a required key is missing, ask the user to fill `.env`. Take
+  the workflow from `FILL_MODE` unless the request names one, and say which one
+  is running in one line.
 - Resolve `ACTIVITY_LOG` (ask and write it back if missing, see above). If the file
   exists, read it: its entries are what has already been reported and feed the
   duplicate check in step 2. A missing file is normal on first use - it is created
@@ -223,8 +229,9 @@ already stand alone.
 
 ## Lean mode (`lean: on`)
 
-Off by default. Switched on by `lean: on` anywhere in the request, or by "lean",
-"economy", "save coins" / "save tokens". It trades checks for spend - fewer reads, fewer
+The default comes from `FILL_MODE` in `.env` (`normal` unless set to `lean`); a request
+switches it for one run with `lean: on` / "lean" / "economy" / "save coins" or with
+"normal". It trades checks for spend - fewer reads, fewer
 round trips - and never skips: identity from `.env`, the 250-word cap, the always-clear
 open sequence, the end check, the log append, stop before PRIVACY and Submit.
 
