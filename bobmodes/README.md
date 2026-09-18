@@ -82,7 +82,9 @@ The IBM Champion Report mode helps you report an IBM Champion (or Rising Champio
 2. **Gather the activity** - one act at a time: what you did, the Act-of-Advocacy type, the product(s), a link (effectively mandatory), the date, and whether IBM may amplify it.
 3. **Write the description** - drafts each "Description of this Activity" for a reviewer who has not seen the work, factual and within 250 words, and reports the word count.
 4. **Confirm the dropdowns** - the Act-of-Advocacy (40) and Product(s) (1097, re-scraped 2026-09-15) option lists are verified verbatim from the live form; the mode picks the exact entry and confirms it with you.
-5. **Produce the output** - a prefilled URL that lands 8 fields (identity, Act of Advocacy, Product(s), Date) via verified field-ID / name params, plus a copy-paste sheet for the fields that cannot be prefilled (Description, Link, Amplify, How-many-more, PRIVACY). If a browser MCP is available it can fill the form in place and verify, but never submits.
+5. **Produce the output** - a prefilled URL that lands 8 fields (identity, Act of Advocacy, Product(s), Date) via verified field-ID / name params, plus a copy-paste sheet for the fields that cannot be prefilled (Description, Link, Amplify, How-many-more, PRIVACY).
+6. **Log the activity** - appends the activity date, the Act-of-Advocacy type, the link and the description to a private activity log (one local markdown file, e.g. a note in your Obsidian vault) and warns on a later run if the same link or artifact is already in there.
+7. **Optionally fill the form in the browser** - with a browser MCP available it clears the form, opens the prefilled URL, types the manual fields and verifies them; it stops before the PRIVACY checkbox and never clicks Submit. Two workflows: **normal** (every check, end screenshot) and **lean** (one read at the end, fewer tokens), chosen by `FILL_MODE` in `.env` or per run with `lean: on`.
 
 The authoritative field spec - the field-ID prefill map, date format, word limits - lives in `references/form_fields.md`; the verified option lists are `references/act_options.md` and `references/product_options.md`. Filling the form in place needs a browser MCP server: Playwright MCP is preferred, browsermcp is the fallback - install and wiring in `ibm-champion-report/dependency.md`. Add `lean: on` to the request for a fill with fewer checks and reads (one verification at the end).
 
@@ -116,9 +118,11 @@ FIRST_NAME=...
 LAST_NAME=...
 PRIMARY_EMAIL=...
 ALTERNATE_EMAIL=...
+ACTIVITY_LOG=            # absolute path of the local activity log (asked on first run if empty)
+FILL_MODE=normal         # default browser workflow: normal | lean
 ```
 
-`.env` is gitignored and stays private; only `.env.sample` (placeholders) is committed.
+`.env.sample` documents every key, including the optional IBM Community URLs. `.env` is gitignored and stays private; only `.env.sample` (placeholders) is committed.
 
 ### Mode layout
 

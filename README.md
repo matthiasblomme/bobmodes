@@ -7,7 +7,7 @@ A Bob mode is a persona with its own instructions, tools, and triggers. These on
 ## Modes
 
 - **ACE Support Case** (`ace-support-case`) - walks you through collecting a complete diagnostic bundle for an IBM ACE support case, then writes a ready-to-paste IBM case submission. [Details](bobmodes/README.md).
-- **IBM Champion Report** (`ibm-champion-report`) - assembles an IBM Champion act-of-advocacy submission for the Activity Report form: pulls your identity from a private `.env`, drafts the description, and produces a proven prefilled-form URL plus a copy-paste sheet (never auto-submits). [Details](bobmodes/README.md).
+- **IBM Champion Report** (`ibm-champion-report`) - assembles an IBM Champion act-of-advocacy submission for the Activity Report form: pulls your identity from a private `.env`, drafts the description, produces a proven prefilled-form URL plus a copy-paste sheet, keeps a private activity log so nothing is reported twice, and can fill the form through a browser MCP in a normal or a lean workflow (never auto-submits). [Details](bobmodes/README.md).
 - **Prompt Forge** (`prompt-forge`) - turns a rough idea or brain dump into a clean prompt tuned for a specific target model (Fable 5 / Opus 4.8 / Sonnet 5 / Haiku 4.5). Its deliverable is the prompt, not the task's output. [Details](bobmodes/README.md).
 - **CVE Analysis** (`cve-analysis`) - practical exploitability assessment of CVEs and IBM security bulletins for ACE and MQ. Answers the question the advisory never does: affected is an inventory fact, but is it actually reachable in *this* environment, and how urgent is the patch? [Details](bobmodes/README.md).
 - **TechXchange Planner** (`techxchange-planner`) - scrapes an IBM event's session catalog (RainFocus API), agenda and FAQ pages, profiles your interests from chat history or guided questions, and builds a slot-budgeted personal conference agenda with ranked alternates; re-run it when session times publish and it clash-checks your picks. Claude Code skill only - no Bob mode. [Details](bobmodes/README.md).
@@ -86,7 +86,7 @@ bobmodes/
 └── bobmodes/
     ├── README.md             # per-mode documentation
     ├── ace-support-case/     # the mode (.bobmodes + SKILL.md + references + custom-rules)
-    ├── ibm-champion-report/  # the mode (.bobmodes + SKILL.md + .env.sample + references)
+    ├── ibm-champion-report/  # the mode (.bobmodes + SKILL.md + .env.sample + dependency.md + references)
     ├── prompt-forge/         # the mode (.bobmodes + SKILL.md + references)
     ├── cve-analysis/         # the mode (.bobmodes + SKILL.md + references + custom-rules)
     └── techxchange-planner/  # skill only (SKILL.md + scripts + references + assets)
