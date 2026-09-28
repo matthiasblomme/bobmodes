@@ -266,7 +266,7 @@ If a documentation or knowledge-base MCP is available, the mode uses it to groun
 
 The TechXchange Planner builds a **personalized IBM conference agenda** end-to-end: it scrapes the event data (session catalog through the RainFocus API, agenda/experience and FAQ pages), discovers your interest profile, and produces a slot-budgeted day-by-day schedule with ranked alternates. It is re-runnable by design: when the session timetable publishes, a refresh run diffs the catalog and clash-checks your picks against the real times. It works for any IBM event with a `reg.tools.ibm.com` session catalog, not just TechXchange.
 
-Claude Code skill only - there is no `.bobmodes` mode definition; the workflow leans on scripting and (optionally) browser tooling rather than a Bob persona.
+A `SKILL.md` skill: it runs in Bob 2.0 (drop the folder in `~/.bob/skills/` or `<project>/.bob/skills/`; verified headless with `bob run` on 2026-09-28) and in Claude Code (`~/.claude/skills/`). There is no `.bobmodes` mode definition - the workflow leans on scripting and (optionally) browser tooling rather than a Bob persona.
 
 ### What it does
 
@@ -307,7 +307,8 @@ techxchange-planner/
 │   ├── fetch_catalog.py          # RainFocus API: full catalog + attributes → JSON
 │   ├── parse_faq.py              # any IBM accordion page → markdown note
 │   ├── build_catalog_notes.py    # catalog note + per-product focus notes
-│   └── mine_history.py           # chat-history interest mining (catalog vocabulary)
+│   ├── mine_history.py           # chat-history interest mining (catalog vocabulary)
+│   └── check_agenda_times.py     # agenda rows vs times[] in the catalog; run before hand-over
 ├── references/
 │   ├── rainfocus-api.md          # API endpoints, token discovery, pagination quirks
 │   └── note-templates.md         # output note structures + slot-budget rules
