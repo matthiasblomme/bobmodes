@@ -21,10 +21,26 @@ phases: **scrape** the event data, **profile** the user's interests, **plan**
 the agenda. Each phase produces markdown notes so the work survives the
 session and the next run can diff instead of redo.
 
-First decision — is this a first run or a refresh? Look for existing output
-notes and a `sessions_raw.json` from a previous run (ask where they live if
-not obvious). A refresh reuses the stored profile and decisions; jump to
-[Refresh runs](#refresh-runs).
+First decision - first run or refresh, and scrape or reuse? Look for existing
+output notes and a `sessions_raw.json` from a previous run (ask where they live
+if not obvious).
+
+- **Scrape data exists** (a `sessions_raw.json`, whatever the notes situation):
+  neither scrape blindly nor reuse blindly. Read its age from
+  `scrape_summary.json` next to it (`scraped_at`; fall back to the file's
+  modification time, or `python scripts/fetch_catalog.py --from-raw <file>`)
+  and its `sessions_with_clock_times`, then ask the user ONE question: re-scrape
+  now, or reuse the data from <date>? Recommend re-scraping when the data is
+  more than a few days old, when its summary had `times_published` false or
+  `sessions_with_clock_times` 0, or when the user says the schedule changed;
+  recommend reuse when it was scraped today. A scrape is 20+ API pages and can
+  take a quarter of an hour, so the answer is worth the question. When nobody
+  can answer (a headless run), take the recommended option and state in the
+  output which one you took and why.
+- **Notes exist too**: this is a refresh. It reuses the stored profile and
+  decisions; after the scrape-or-reuse decision jump to
+  [Refresh runs](#refresh-runs).
+- **Nothing exists**: first run, start at Phase 1.
 
 ## Status feedback — make waiting fun
 
@@ -56,7 +72,11 @@ debugging any scrape problem, the quirks are non-obvious.
    Defaults target TechXchange 2026. For another event/year, discover the two
    widget tokens via the browser (steps in the reference) and pass
    `--api-profile` / `--widget`. The summary it prints tells you the real
-   session count, type distribution, and — critically — `times_published`.
+   session count, type distribution, and - critically - `times_published`
+   and `sessions_with_clock_times`. The same summary lands in
+   `<data-dir>/scrape_summary.json` with a `scraped_at` timestamp;
+   `--from-raw <data-dir>/sessions_raw.json` reprints it from an existing
+   scrape without fetching.
 2. **Event pages** (agenda/experience + FAQ). The FAQ:
    ```
    python scripts/parse_faq.py --url <faq-url> --out <notes-dir>/<slug>-faq.md
@@ -138,19 +158,41 @@ Follow the personalized-agenda template in
 4. **Write the personalized agenda note**: day tables, track tallies,
    ranked alternates (with the swap reason), and a to-do list whose first
    item is the refresh instruction for when the schedule publishes.
+5. **Clock times come from `times[]`**: `times[0].startTimeFormatted`, ordered
+   by `dayTimeSort` (`yyyymmddtHHMM`). Never from `dayTimeHour`, which is the
+   hour bucket (`...t12` for a 12:45 start), and never from the `Day Time`
+   attribute, which stayed empty in 2026 while `times[]` was filled. A pick
+   with an empty `times[]` is `TBD`, not a guess. Details and the two ways
+   this went wrong on 2026-09-28 are in
+   [references/rainfocus-api.md](references/rainfocus-api.md).
+6. **The frontmatter `date` is today, from the clock**: run `date +%F` or
+   `Get-Date -Format yyyy-MM-dd` and use that. Do not write a date from memory.
+7. **Check the note against the data before handing it over**:
+   ```
+   python scripts/check_agenda_times.py --raw <data-dir>/sessions_raw.json \
+     --agenda <notes-dir>/<slug>-my-agenda.md
+   ```
+   It compares every day-table row's clock time with `times[0]` of the session
+   named in that row and lists the mismatches. Fix each one (or mark the row
+   `TBD`) and re-run until it reports zero. The 2026-09-28 dry run that read
+   `times[]` correctly still placed 2 of 35 timed picks at times that exist
+   nowhere in the catalog; a plan is not done until this passes.
 
-If `times_published` was false, say so prominently — the plan is provisional
-by construction, and pretending otherwise erodes trust in the whole note.
+If `times_published` was false, or `sessions_with_clock_times` was 0, say so
+prominently - the plan is provisional by construction, and pretending
+otherwise erodes trust in the whole note.
 
 ## Refresh runs
 
-Re-run Phase 1 into the same data dir, then diff against the previous
-`sessions_raw.json` (details in the templates reference):
+After the scrape-or-reuse question at the top, re-run Phase 1 into the same
+data dir (keep the previous `sessions_raw.json` as `sessions_prev.json` first),
+then diff against it (details in the templates reference):
 
 - Report added/removed/changed sessions; flag any that were picks.
-- If `times_published` flipped true: map picks + alternates to real slots,
-  detect clashes, resolve from the alternates list, rewrite the day tables
-  with actual times. This is the moment the alternates list earns its keep.
+- If `times_published` flipped true, or `sessions_with_clock_times` grew: map
+  picks + alternates to real slots from `times[]`, detect clashes, resolve
+  from the alternates list, rewrite the day tables with actual times. This is
+  the moment the alternates list earns its keep.
 - Update the personalized agenda **in place** — it contains user decisions;
   list what changed and re-ask only forks the new data actually reopened.
 

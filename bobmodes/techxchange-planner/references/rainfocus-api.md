@@ -58,17 +58,39 @@ as defaults.
 - `attributevalues[]`: each `{attribute, value}` — Tech Track, Session Topic,
   Technical Level, Industry, products, `IBM Champion Led`, `Day`, `Day Time`
 - `participants[]`: `fullName`, `jobTitle`, `companyName`, `roles`
+- `times[]`: the schedule, one entry per scheduled occurrence (normally one):
+  - `date` - `2026-10-27`
+  - `dayTimeSort` - `20261027t1245`: the sortable START time, minute precision
+  - `startTimeFormatted` / `endTimeFormatted` - `12:45 PM` / `02:15 PM`
+  - `room` - e.g. `Tech Talk Stage for Bob (Bob)`
+  - `dayTimeHour` - `20261027t12`: the HOUR BUCKET the site's filter uses. It is
+    not the start time; a 12:45 session carries `dayTimeHour` `...t12`. Never
+    read it as a clock time.
+
+**Clock times come from `times[0].dayTimeSort` or `startTimeFormatted`, not from
+the attributes.** The `Day` attribute (`Tuesday, Oct 27`) only names the day, and
+`Day Time` was empty on the whole 2026 catalog while `times[]` was filled for
+1,049 of 1,137 sessions. On 2026-09-28 one run read `dayTimeHour` and produced an
+agenda with every start cut to the hour and forks around clashes that did not
+exist; another trusted the empty `Day Time` and declared the clock times
+unpublished. Both notes looked fine. A pick whose `times[]` is empty is `TBD`,
+not a guess.
 
 Observed lengths: Technology Breakout 45, Tech Talk 20, Hands-on Lab 90,
 Workshop 180, Certification exam ~60–90. Re-verify per event from the data.
 
 ## Detecting whether the schedule is published
 
-Early in the cycle, sessions have **no** `Day` / `Day Time` attribute values —
-the timetable isn't public yet. `fetch_catalog.py` reports
-`times_published` and `sessions_with_times` in its summary. When
+Early in the cycle `times[]` is empty on every session and the `Day` / `Day Time`
+attributes are absent - the timetable isn't public yet. `fetch_catalog.py`
+reports `times_published` (any session with a non-empty `times[]` or a `Day`
+attribute), `sessions_with_times` and `sessions_with_clock_times` (non-empty
+`times[]`, i.e. minute-precision starts) in its summary, and writes the same
+summary with a `scraped_at` timestamp to `<out>/scrape_summary.json`;
+`--from-raw <path>` reprints it from an existing scrape without fetching. When
 `times_published` flips to true on a re-run, the personalized agenda must be
-re-checked for clashes (that's the main reason re-runs exist).
+re-checked for clashes (that's the main reason re-runs exist). Days can publish
+before clock times, so `sessions_with_clock_times` is the number to watch.
 
 ## Related catalogs
 

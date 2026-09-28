@@ -5,7 +5,10 @@ Four notes make up a complete run. `build_catalog_notes.py` generates #2 and
 markdown with YAML frontmatter (`date`, `title`, `tags`, `url`); if the
 output directory belongs to an Obsidian vault or a repo with its own
 frontmatter conventions (check for a CLAUDE.md), follow those instead, and
-cross-link the notes with `[[wikilinks]]`.
+cross-link the notes with `[[wikilinks]]`. `date` is today's date read from the
+system clock with a command (`date +%F`, `Get-Date -Format yyyy-MM-dd`), never
+remembered or inferred: both 2026-09-28 runs wrote a wrong date from memory,
+one two weeks ahead, one a year back.
 
 ## 1. Event agenda note (`<slug>-agenda.md`)
 
@@ -42,13 +45,17 @@ The deliverable. Structure that proved to work:
 # <Event> — My Personalized Agenda
 <How it was built: profile source, chosen focus areas, cert picks.>
 
-> ⚠️ If times_published is false: state clearly that day placement is a
-> plan, not a schedule, and list the re-run instruction.
+> If times_published is false, or sessions_with_clock_times is 0: state
+> clearly that day placement is a plan, not a schedule, and list the re-run
+> instruction.
 
 <Session lengths line: Breakout 45 · Talk 20 · Lab 90 (verify per event).>
 
 ## <Day> — <theme>            (one section per day, incl. arrival day)
-| When | Activity |           (fixed anchors + picks with code, title, why)
+| When | Activity |           (fixed anchors + picks with code, title, why;
+                               When = times[0].startTimeFormatted, ordered by
+                               dayTimeSort - never dayTimeHour, never the Day
+                               Time attribute; empty times[] = TBD)
 
 ## Track tallies              (picks per interest cluster — shows coverage)
 ## Alternates                 (ranked, with the swap reason per entry)
@@ -88,8 +95,9 @@ A refresh = re-scrape + regenerate #2/#3/#5 + diff against the previous
 - sessions added/removed/retitled → mention in the summary, update picks if
   a pick disappeared
 - `times_published` flipped true → the big one: map every pick and alternate
-  to its actual slot, find clashes, resolve via alternates, and rewrite the
-  personalized agenda's day tables with real times
+  to its actual slot (`times[0].dayTimeSort` / `startTimeFormatted`), find
+  clashes, resolve via alternates, and rewrite the personalized agenda's day
+  tables with real times
 - price/deadline changes in FAQ → call out
 
 Never silently regenerate the personalized agenda: it contains user
