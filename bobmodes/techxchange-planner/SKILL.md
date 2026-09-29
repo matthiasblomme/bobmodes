@@ -173,10 +173,14 @@ Follow the personalized-agenda template in
      --agenda <notes-dir>/<slug>-my-agenda.md
    ```
    It compares every day-table row's clock time with `times[0]` of the session
-   named in that row and lists the mismatches. Fix each one (or mark the row
-   `TBD`) and re-run until it reports zero. The 2026-09-28 dry run that read
+   named in that row, and it reports any two rows of the same day whose times
+   overlap. Fix each time mismatch (or mark the row `TBD`), resolve each overlap
+   by moving one of the two to the alternates with its swap reason, and re-run
+   until it reports zero of both. An overlap is never argued away ("speakers
+   usually finish early"): one pick per slot. The 2026-09-28 dry run that read
    `times[]` correctly still placed 2 of 35 timed picks at times that exist
-   nowhere in the catalog; a plan is not done until this passes.
+   nowhere in the catalog, and a 2026-09-29 run kept two picks that overlap by
+   five minutes; a plan is not done until this passes.
 
 If `times_published` was false, or `sessions_with_clock_times` was 0, say so
 prominently - the plan is provisional by construction, and pretending
