@@ -308,7 +308,7 @@ techxchange-planner/
 │   ├── parse_faq.py              # any IBM accordion page → markdown note
 │   ├── build_catalog_notes.py    # catalog note + per-product focus notes
 │   ├── mine_history.py           # chat-history interest mining (catalog vocabulary)
-│   └── check_agenda_times.py     # agenda rows vs times[] in the catalog; run before hand-over
+│   └── check_agenda_times.py     # agenda rows vs times[] in the catalog + overlaps; run before hand-over
 ├── references/
 │   ├── rainfocus-api.md          # API endpoints, token discovery, pagination quirks
 │   └── note-templates.md         # output note structures + slot-budget rules
