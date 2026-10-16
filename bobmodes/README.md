@@ -253,12 +253,15 @@ cve-analysis/
 ├── .env.sample                  # estate baseline template; copy to .env
 ├── custom-rules/
 │   └── rules.md                 # your organisation's policy (empty by default)
+|-- assets/
+|   `-- IBM_SecurityBulletin_CVSS_Calculation.xlsx  # CVSS calculator and radar-graph template
 └── references/
     ├── report-template.md       # deep-dive, triage table, and log-entry structures
-    └── component-map.md         # where bundled components live inside ACE and MQ
+    ├── component-map.md         # where bundled components live inside ACE and MQ
+    `-- cvss-graph-workbook.md   # how to use the workbook for CVSS graphs
 ```
 
-If a documentation or knowledge-base MCP is available, the mode uses it to ground component-usage claims in the product documentation and to recall prior assessments. Without one it falls back to web research and the bundled component map.
+If a documentation MCP is available, the mode uses it to ground component-usage claims in the product documentation and to recall prior assessments. Without one it falls back to web research and the bundled component map.
 
 ---
 
