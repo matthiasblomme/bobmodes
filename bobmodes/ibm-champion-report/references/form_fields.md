@@ -304,17 +304,21 @@ checkbox, combobox by click + type + submit).
    shape (the tool's schema): `{ "target": <selector>, "name": <label>, "type":
    "textbox" | "checkbox", "value": <string, "true"/"false" for a checkbox> }`.
 3. **Comboboxes last**, each in two calls: `browser_click` on the wrapper
-   `[role=combobox] >> nth=N` (opens the list and focuses an `input[role=combobox]`
-   with placeholder "Find an option"), then `browser_type` on `input[role=combobox]`
-   with the exact option text and `submit: true`. `browser_type` on the wrapper itself
-   fails ("not an input"). Order: 2nd-act type, 2nd-act product(s), then How-many-more
+   `div[role=combobox] >> nth=N` (opens the list and focuses the search input
+   `input[role=combobox][placeholder="Find an option"]`), then `browser_type` on that
+   search input with the exact option text and `submit: true`. `browser_type` on the
+   wrapper itself fails ("not an input"). Count and target the wrappers as
+   `div[role=combobox]`: since the 2026-11-19 live check the two date inputs carry
+   `role=combobox` too, so a bare `[role=combobox] >> nth=2` lands on the 1st-act date
+   and a bare `input[role=combobox]` types into it (seen: "Zero" in the date field, How
+   many MORE left at 1). Order: 2nd-act type, 2nd-act product(s), then How-many-more
    (`Zero` for one act; untouched for two; `2` for three) - selecting a value re-renders
    the block, so nothing else is targeted after it.
 4. **One `browser_evaluate`** returning every field, compared to the copy-paste sheet:
 
    ```
    () => { const tb=[...document.querySelectorAll("textarea, input[type=text]")].map(e=>e.value);
-     const cb=[...document.querySelectorAll("[role=combobox]")].map(c=>c.innerText.trim());
+     const cb=[...document.querySelectorAll("div[role=combobox]")].map(c=>c.innerText.trim());
      const chk=[...document.querySelectorAll("[role=checkbox]")].map(c=>c.getAttribute("aria-checked"));
      const d=l=>document.querySelector("[role=textbox][aria-label="+l+"]")?.innerText||"";
      const links=[...document.querySelectorAll("input[type=text]:not([placeholder=yyyy-mm-dd])")].slice(1).map(e=>e.value);
@@ -331,14 +335,15 @@ checkbox, combobox by click + type + submit).
    was skipped or a mismatch remains.
 5. **Stop before submit** - same rule as step 8 above.
 
-Selector table (DOM order; observed 2026-09-15/17):
+Selector table (DOM order; observed 2026-09-15/17, combobox rows corrected 2026-11-19):
 
 | Control | Selector |
 |---|---|
 | Description act 1 / act 2 | `[role=textbox][aria-label=A1_DESCRIPTION]` / `...A2_DESCRIPTION` |
 | Link act 1 / act 2 | `input[type=text]:not([placeholder="yyyy-mm-dd"]) >> nth=1` / `nth=2` (nth=0 is the Champion ID; a plain `:not([placeholder])` drops it because that input carries an empty placeholder attribute, shifting the positions) |
 | Amplify act 1 / act 2, PRIVACY | `[role=checkbox] >> nth=0` / `nth=1` / `nth=2` (PRIVACY is never touched) |
-| Act 1, Products 1, How-many-more, Act 2, Products 2 | `[role=combobox] >> nth=0` .. `nth=4` |
+| Act 1, Products 1, How-many-more, Act 2, Products 2 | `div[role=combobox] >> nth=0` .. `nth=4` (the DIVs only: the date inputs also carry `role=combobox`) |
+| Option search box, after a wrapper click | `input[role=combobox][placeholder="Find an option"]` |
 | Date act 1 / act 2 | `input[placeholder="yyyy-mm-dd"] >> nth=0` / `nth=1` (prefilled; manual only if the URL lacked it) |
 
 Budget: about 10 tool calls for one act, 13 for two; one read, no image. Claude
@@ -352,8 +357,9 @@ When the submission carries a 2nd act, the prefilled URL adds its date
 stays at its default `1`, so the 2nd-act block is open from the first snapshot - do not
 touch that field for two acts (set `2` for three). Fill the 1st act as above, then:
 
-- **Type:** the combobox under the "2nd Act of Advocacy." label (the 4th combobox on the
-  page, after 1st Act, 1st Product(s) and How-many-more). Click it, type the exact
+- **Type:** the combobox under the "2nd Act of Advocacy." label (the 4th
+  `div[role=combobox]` on the page, after 1st Act, 1st Product(s) and How-many-more; the
+  date inputs also carry `role=combobox`, so count the DIVs). Click it, type the exact
   `act_options.md` entry, confirm the filtered list shows that one entry, `Enter`.
 - **Product(s):** the empty multi-select combobox in the 2nd-act block. Click it, type the
   exact `product_options.md` name, then check the option list: `Enter` takes the **top**
